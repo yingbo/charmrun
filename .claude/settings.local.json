@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:code.visualstudio.com)",
+      "Bash(git -C /Volumes/MSH/projs/charmrun log --oneline --all)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:vscode-elements.github.io)",
+      "Bash(npm install)",
+      "Bash(npm run compile)"
+    ]
+  }
+}
