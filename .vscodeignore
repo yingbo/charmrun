@@ -1,0 +1,12 @@
+.vscode/**
+.vscode-test/**
+src/**
+out/**
+node_modules/**
+.gitignore
+tsconfig.json
+esbuild.js
+*.map
+AGENTS.md
+FEATURE_SPEC.md
+firebase-debug.log

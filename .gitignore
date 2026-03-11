@@ -205,3 +205,10 @@ cython_debug/
 marimo/_static/
 marimo/_lsp/
 __marimo__/
+
+# Node.js / VS Code Extension
+node_modules/
+out/
+*.vsix
+.vscode-test/
+firebase-debug.log

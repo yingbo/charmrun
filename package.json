@@ -1,0 +1,186 @@
+{
+  "name": "charmrun",
+  "displayName": "CharmRun - Python Run Configs",
+  "description": "PyCharm-style Python run configuration manager with GUI editor",
+  "version": "0.1.0",
+  "publisher": "ymiao",
+  "license": "MIT",
+  "engines": {
+    "vscode": "^1.85.0"
+  },
+  "categories": [
+    "Debuggers",
+    "Programming Languages"
+  ],
+  "activationEvents": [
+    "onLanguage:python",
+    "workspaceContains:**/*.py"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "charmrun-explorer",
+          "title": "CharmRun",
+          "icon": "media/icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "charmrun-explorer": [
+        {
+          "id": "charmrun.configurationsView",
+          "name": "Run Configurations",
+          "icon": "media/icon.svg",
+          "contextualTitle": "Python Run Configurations"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "charmrun.configurationsView",
+        "contents": "No run configurations found.\n[Create Configuration](command:charmrun.createConfiguration)"
+      }
+    ],
+    "commands": [
+      {
+        "command": "charmrun.runConfiguration",
+        "title": "Run Configuration",
+        "category": "CharmRun",
+        "icon": "$(play)"
+      },
+      {
+        "command": "charmrun.debugConfiguration",
+        "title": "Debug Configuration",
+        "category": "CharmRun",
+        "icon": "$(bug)"
+      },
+      {
+        "command": "charmrun.runCurrentFile",
+        "title": "Run Current Python File",
+        "category": "CharmRun"
+      },
+      {
+        "command": "charmrun.debugCurrentFile",
+        "title": "Debug Current Python File",
+        "category": "CharmRun"
+      },
+      {
+        "command": "charmrun.createConfiguration",
+        "title": "Create Configuration",
+        "category": "CharmRun",
+        "icon": "$(add)"
+      },
+      {
+        "command": "charmrun.editConfiguration",
+        "title": "Edit Configuration",
+        "category": "CharmRun",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "charmrun.deleteConfiguration",
+        "title": "Delete Configuration",
+        "category": "CharmRun",
+        "icon": "$(trash)"
+      },
+      {
+        "command": "charmrun.duplicateConfiguration",
+        "title": "Duplicate Configuration",
+        "category": "CharmRun",
+        "icon": "$(copy)"
+      },
+      {
+        "command": "charmrun.selectActiveConfig",
+        "title": "Select Active Configuration",
+        "category": "CharmRun"
+      },
+      {
+        "command": "charmrun.refreshConfigurations",
+        "title": "Refresh Configurations",
+        "category": "CharmRun",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "charmrun.runConfigFromTree",
+        "title": "Run",
+        "category": "CharmRun",
+        "icon": "$(play)"
+      },
+      {
+        "command": "charmrun.debugConfigFromTree",
+        "title": "Debug",
+        "category": "CharmRun",
+        "icon": "$(bug)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "charmrun.createConfiguration",
+          "when": "view == charmrun.configurationsView",
+          "group": "navigation"
+        },
+        {
+          "command": "charmrun.refreshConfigurations",
+          "when": "view == charmrun.configurationsView",
+          "group": "navigation"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "charmrun.runConfigFromTree",
+          "when": "view == charmrun.configurationsView && viewItem == runConfiguration",
+          "group": "inline@1"
+        },
+        {
+          "command": "charmrun.debugConfigFromTree",
+          "when": "view == charmrun.configurationsView && viewItem == runConfiguration",
+          "group": "inline@2"
+        },
+        {
+          "command": "charmrun.editConfiguration",
+          "when": "view == charmrun.configurationsView && viewItem == runConfiguration",
+          "group": "1_actions@1"
+        },
+        {
+          "command": "charmrun.duplicateConfiguration",
+          "when": "view == charmrun.configurationsView && viewItem == runConfiguration",
+          "group": "1_actions@2"
+        },
+        {
+          "command": "charmrun.deleteConfiguration",
+          "when": "view == charmrun.configurationsView && viewItem == runConfiguration",
+          "group": "2_destructive@1"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "charmrun.runConfigFromTree",
+          "when": "false"
+        },
+        {
+          "command": "charmrun.debugConfigFromTree",
+          "when": "false"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "compile": "npm run check-types && node esbuild.js",
+    "check-types": "tsc --noEmit",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "vscode:prepublish": "npm run package",
+    "package": "npm run check-types && node esbuild.js --production",
+    "lint": "eslint src --ext ts"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.85.0",
+    "@types/node": "^20.0.0",
+    "typescript": "^5.4.0",
+    "esbuild": "^0.20.0",
+    "npm-run-all": "^4.1.5"
+  }
+}
