@@ -6,6 +6,14 @@
   "publisher": "ymiao",
   "icon": "media/extension-icon.png",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/yingbo/charmrun.git"
+  },
+  "homepage": "https://github.com/yingbo/charmrun",
+  "bugs": {
+    "url": "https://github.com/yingbo/charmrun/issues"
+  },
   "engines": {
     "vscode": "^1.85.0"
   },
