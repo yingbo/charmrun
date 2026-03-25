@@ -4,6 +4,7 @@
   "description": "PyCharm-style Python run configuration manager with GUI editor",
   "version": "0.1.0",
   "publisher": "ymiao",
+  "icon": "media/extension-icon.png",
   "license": "MIT",
   "engines": {
     "vscode": "^1.85.0"
