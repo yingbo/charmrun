@@ -1,5 +1,7 @@
 .vscode/**
 .vscode-test/**
+.dev-host/**
+.claude/**
 src/**
 out/**
 node_modules/**
@@ -10,3 +12,5 @@ esbuild.js
 AGENTS.md
 FEATURE_SPEC.md
 firebase-debug.log
+test-workspace/**
+worklog.md
