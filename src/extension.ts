@@ -5,22 +5,39 @@ import { ConfigEditorProvider } from './webview/configEditorProvider';
 import { StatusBarManager } from './statusBar';
 import { registerCommands } from './commands';
 
+let outputChannel: vscode.OutputChannel | undefined;
+
 export function activate(context: vscode.ExtensionContext): void {
-  const configStore = new ConfigStore(context);
-  const treeProvider = new ConfigTreeProvider(configStore);
-  const editorProvider = new ConfigEditorProvider(context, configStore);
-  const statusBar = new StatusBarManager(configStore);
+  outputChannel = vscode.window.createOutputChannel('CharmRun');
+  context.subscriptions.push(outputChannel);
 
-  const treeView = vscode.window.createTreeView('charmrun.configurationsView', {
-    treeDataProvider: treeProvider,
-    showCollapseAll: false,
-  });
+  try {
+    outputChannel.appendLine('Activating CharmRun');
 
-  registerCommands(context, configStore, treeProvider, editorProvider, statusBar);
+    const configStore = new ConfigStore(context);
+    const treeProvider = new ConfigTreeProvider(configStore);
+    const editorProvider = new ConfigEditorProvider(context, configStore);
+    const statusBar = new StatusBarManager(configStore);
 
-  statusBar.show();
+    registerCommands(context, configStore, treeProvider, editorProvider, statusBar);
+    outputChannel.appendLine('Commands registered');
 
-  context.subscriptions.push(treeView, configStore, statusBar, editorProvider);
+    const treeView = vscode.window.createTreeView('charmrun.configurationsView', {
+      treeDataProvider: treeProvider,
+      showCollapseAll: false,
+    });
+    outputChannel.appendLine('Tree view created');
+
+    statusBar.show();
+    outputChannel.appendLine('Status bar shown');
+
+    context.subscriptions.push(treeView, configStore, statusBar, editorProvider);
+    outputChannel.appendLine('CharmRun activation complete');
+  } catch (error) {
+    const message = error instanceof Error ? error.stack ?? error.message : String(error);
+    outputChannel.appendLine(`Activation failed: ${message}`);
+    void vscode.window.showErrorMessage('CharmRun failed to activate. See Output > CharmRun for details.');
+  }
 }
 
 export function deactivate(): void {}

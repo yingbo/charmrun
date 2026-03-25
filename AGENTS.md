@@ -32,7 +32,7 @@ management with a GUI editor. Built with TypeScript and esbuild.
 
 - `src/extension.ts` - Entry point, wires components together
 - `src/types.ts` - RunConfiguration interface and related types
-- `src/configStore.ts` - CRUD for .vscode/python-run-configs.json
+- `src/configStore.ts` - CRUD for CharmRun-managed Python entries in .vscode/launch.json
 - `src/runner.ts` - Build debug configs, launch via vscode.debug.startDebugging
 - `src/variableResolver.ts` - ${workspaceFolder}, ${file}, ${env:VAR} expansion
 - `src/interpreterResolver.ts` - Resolve Python interpreter path
@@ -43,5 +43,5 @@ management with a GUI editor. Built with TypeScript and esbuild.
 
 ## Configuration Storage
 
-Configs stored in `.vscode/python-run-configs.json` per workspace folder.
+Configs stored as CharmRun-managed entries in `.vscode/launch.json` per workspace folder.
 Active config ID stored in VS Code's workspaceState (per-user, not committed).

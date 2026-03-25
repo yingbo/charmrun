@@ -9,7 +9,7 @@ All notable changes to this project are documented in this file.
 - Initial CharmRun implementation.
 - Activity Bar container and run-configuration tree view.
 - Webview-based run configuration editor (create/edit).
-- Workspace config storage in `.vscode/python-run-configs.json`.
+- Workspace config storage in CharmRun-managed entries inside `.vscode/launch.json`.
 - Run/debug execution using VS Code debug API with `debugpy` launch configs.
 - Status bar integration for active config selection and run/debug actions.
 - Command set for create/edit/delete/duplicate/select/run/debug/refresh.

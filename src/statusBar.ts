@@ -54,8 +54,8 @@ export class StatusBarManager implements vscode.Disposable {
       this.configSelector.text = '$(gear) Select Config';
       this.configSelector.command = 'charmrun.selectActiveConfig';
     } else {
-      this.configSelector.text = '$(add) Create Run Config';
-      this.configSelector.command = 'charmrun.createConfiguration';
+      this.configSelector.text = '$(add) Add Run Config';
+      this.configSelector.command = 'charmrun.openConfigurationFlow';
     }
 
     this.runButton.hide();

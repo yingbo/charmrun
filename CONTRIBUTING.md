@@ -41,7 +41,7 @@ See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for details.
 - TypeScript strict mode is enabled
 - Bundle output is `dist/extension.js` via esbuild
 - Keep UI consistent with VS Code theme variables
-- Store shared configs in `.vscode/python-run-configs.json`
+- Store CharmRun-managed configs in `.vscode/launch.json`
 - Keep active config selection in workspace state (user-local)
 
 ## Git Workflow

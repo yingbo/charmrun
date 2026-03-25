@@ -1,69 +1,69 @@
 # Configuration Format
 
-CharmRun stores run configurations in:
+CharmRun stores managed run configurations in:
 
-`<workspace>/.vscode/python-run-configs.json`
+`<workspace>/.vscode/launch.json`
 
-## Schema
+CharmRun only manages Python `debugpy` launch entries that it created itself or that the user explicitly adopted.
+
+## Managed Entry Shape
 
 ```json
 {
-  "version": 1,
+  "version": "0.2.0",
   "configurations": [
     {
-      "id": "uuid-v4-like-string",
       "name": "Run API Server",
-      "runType": "script",
-      "script": "src/api/main.py",
-      "module": "",
-      "interpreter": "selected",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "src/api/main.py",
       "args": ["--port", "8000"],
       "cwd": "${workspaceFolder}",
       "env": {
         "ENV": "dev"
       },
-      "terminal": "integrated",
-      "runMode": "run"
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "charmrunManaged": true,
+      "charmrunId": "uuid-v4-like-string",
+      "charmrunRunMode": "run"
     }
   ]
 }
 ```
 
-## Field Reference
+## Mapping
 
-- `version`: number
-  - Current value: `1`
-- `configurations`: array of run configurations
+- `name` -> `name`
+- `runType = "script"` -> `program`
+- `runType = "module"` -> `module`
+- `interpreter` -> `python` when a custom interpreter is set
+- `interpreter = "selected"` -> omit `python` so VS Code/Python uses the selected interpreter
+- `args` -> `args`
+- `cwd` -> `cwd`
+- `env` -> `env`
+- `terminal` -> `console`
+- `runMode` -> `charmrunRunMode`
 
-Run configuration fields:
+CharmRun metadata:
 
-- `id`: string
-  - Stable unique identifier used internally (active config, updates)
-- `name`: string
-  - Display name in tree/status bar
-- `runType`: `"script"` | `"module"`
-- `script`: string
-  - Used when `runType = "script"`
-- `module`: string
-  - Used when `runType = "module"`
-- `interpreter`: string
-  - `"selected"` to use resolved interpreter
-  - Or custom path/command (for example `/usr/bin/python3` or `python3`)
-- `args`: string[]
-  - Arguments passed to program/module
-- `cwd`: string
-  - Working directory, supports variable placeholders
-- `env`: `{ [key: string]: string }`
-  - Environment variables
-- `terminal`: `"integrated"` | `"external"` | `"internalConsole"`
-- `runMode`: `"run"` | `"debug"`
-  - Default mode when running this configuration (can be overridden by command)
+- `charmrunManaged: true`
+- `charmrunId: string`
+- `charmrunRunMode: "run" | "debug"`
+
+## Adoption
+
+Use `CharmRun: Adopt launch.json Configuration` to take over an existing Python `debugpy` launch config in place. CharmRun adds its metadata to that same `launch.json` entry and then edits it through the GUI.
+
+## Preserved Fields
+
+CharmRun preserves unknown fields on managed Python launch entries. Existing fields such as `justMyCode`, `subProcess`, or `envFile` remain in `launch.json` when you edit the config in the GUI.
 
 ## Validation Rules
 
 - `name` is required
-- `script` is required for `runType = "script"`
-- `module` is required for `runType = "module"`
+- `program` is required for script configs
+- `module` is required for module configs
 
 ## Variable Placeholders
 
@@ -81,5 +81,5 @@ CharmRun resolves:
 
 ## Multi-Root Behavior
 
-Each workspace folder can have its own `.vscode/python-run-configs.json`.  
-CharmRun shows all configurations across workspace folders in one tree.
+Each workspace folder can have its own `.vscode/launch.json`.  
+CharmRun shows all CharmRun-managed configurations across workspace folders in one tree.

@@ -14,11 +14,7 @@ export interface RunConfiguration {
   env: Record<string, string>;
   terminal: TerminalType;
   runMode: RunMode;
-}
-
-export interface ConfigFile {
-  version: 1;
-  configurations: RunConfiguration[];
+  extra?: Record<string, unknown>;
 }
 
 export function createDefaultConfig(name: string): RunConfiguration {
@@ -34,6 +30,9 @@ export function createDefaultConfig(name: string): RunConfiguration {
     env: {},
     terminal: 'integrated',
     runMode: 'run',
+    extra: {
+      justMyCode: true,
+    },
   };
 }
 
