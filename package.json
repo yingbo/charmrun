@@ -3,7 +3,7 @@
   "displayName": "CharmRun - Python Run Configs",
   "description": "PyCharm-style Python run configuration manager with GUI editor",
   "version": "0.1.0",
-  "publisher": "ymiao",
+  "publisher": "yingbo",
   "icon": "media/extension-icon.png",
   "license": "MIT",
   "repository": {
