@@ -54,7 +54,7 @@ export function getEditorHtml(
       padding: 6px 8px;
       background: var(--vscode-input-background);
       color: var(--vscode-input-foreground);
-      border: 1px solid var(--vscode-input-border, transparent);
+      border: 1px solid var(--vscode-input-border, var(--vscode-panel-border, rgba(128,128,128,0.35)));
       border-radius: 2px;
       font-family: var(--vscode-font-family);
       font-size: var(--vscode-font-size);
@@ -351,6 +351,7 @@ export function getEditorHtml(
           env: env,
           terminal: terminalEl.value,
           runMode: runModeEl.value,
+          extra: initialConfig.extra || {},
         };
       }
 

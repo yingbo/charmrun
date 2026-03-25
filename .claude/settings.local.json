@@ -6,7 +6,8 @@
       "WebFetch(domain:github.com)",
       "WebFetch(domain:vscode-elements.github.io)",
       "Bash(npm install)",
-      "Bash(npm run compile)"
+      "Bash(npm run compile)",
+      "Bash(ls /Volumes/MSH/projs/charmrun/tsconfig*.json)"
     ]
   }
 }

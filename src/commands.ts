@@ -87,6 +87,116 @@ export function registerCommands(
     })
   );
 
+  // Primary empty-state flow: create a new managed config or adopt an existing launch.json entry.
+  context.subscriptions.push(
+    vscode.commands.registerCommand('charmrun.openConfigurationFlow', async () => {
+      const folder = await getWorkspaceFolder();
+      if (!folder) {
+        return;
+      }
+
+      const adoptable = configStore.getAdoptableConfigurations();
+      if (adoptable.length === 0) {
+        await editorProvider.open(folder);
+        return;
+      }
+
+      const isMultiRoot = (vscode.workspace.workspaceFolders?.length || 0) > 1;
+      const selected = await vscode.window.showQuickPick(
+        [
+          {
+            label: '$(add) Create new configuration',
+            detail: 'Add a new CharmRun-managed entry to .vscode/launch.json',
+            action: 'create' as const,
+          },
+          ...adoptable.map((item) => ({
+            label: `$(cloud-download) Adopt: ${item.config.name}`,
+            description: isMultiRoot ? item.folder.name : undefined,
+            detail:
+              item.config.runType === 'script'
+                ? item.config.script
+                : `-m ${item.config.module}`,
+            action: 'adopt' as const,
+            item,
+          })),
+        ],
+        {
+          placeHolder: 'Create a new configuration or adopt one from launch.json',
+        }
+      );
+
+      if (!selected) {
+        return;
+      }
+
+      if (selected.action === 'create') {
+        await editorProvider.open(folder);
+        return;
+      }
+
+      const adopted = configStore.adoptConfiguration(
+        selected.item.folder,
+        selected.item.entryIndex
+      );
+      if (!adopted) {
+        vscode.window.showErrorMessage(
+          'CharmRun: Failed to adopt the selected launch configuration.'
+        );
+        return;
+      }
+
+      configStore.setActiveConfigId(adopted.id);
+      await editorProvider.open(selected.item.folder, adopted);
+    })
+  );
+
+  // Adopt an existing Python launch.json configuration
+  context.subscriptions.push(
+    vscode.commands.registerCommand('charmrun.adoptLaunchConfiguration', async () => {
+      const adoptable = configStore.getAdoptableConfigurations();
+      if (adoptable.length === 0) {
+        vscode.window.showInformationMessage(
+          'CharmRun: No unmanaged Python launch configurations found in launch.json.'
+        );
+        return;
+      }
+
+      const isMultiRoot = (vscode.workspace.workspaceFolders?.length || 0) > 1;
+      const selected = await vscode.window.showQuickPick(
+        adoptable.map((item) => ({
+          label: item.config.name,
+          description: isMultiRoot ? item.folder.name : undefined,
+          detail:
+            item.config.runType === 'script'
+              ? item.config.script
+              : `-m ${item.config.module}`,
+          item,
+        })),
+        {
+          placeHolder: 'Select a Python launch configuration to manage with CharmRun',
+        }
+      );
+
+      if (!selected) {
+        return;
+      }
+
+      const adopted = configStore.adoptConfiguration(
+        selected.item.folder,
+        selected.item.entryIndex
+      );
+      if (!adopted) {
+        vscode.window.showErrorMessage(
+          'CharmRun: Failed to adopt the selected launch configuration.'
+        );
+        return;
+      }
+
+      configStore.setActiveConfigId(adopted.id);
+      await editorProvider.open(selected.item.folder, adopted);
+    })
+  );
+
   // Edit configuration (from tree item)
   context.subscriptions.push(
     vscode.commands.registerCommand(
@@ -183,7 +293,7 @@ export function registerCommands(
           'Create Configuration'
         );
         if (action) {
-          vscode.commands.executeCommand('charmrun.createConfiguration');
+          vscode.commands.executeCommand('charmrun.openConfigurationFlow');
         }
         return;
       }

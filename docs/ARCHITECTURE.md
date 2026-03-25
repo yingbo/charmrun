@@ -8,10 +8,11 @@ CharmRun is a VS Code extension that manages Python run configurations via GUI a
   - Activation entrypoint
   - Instantiates and wires store, tree provider, editor provider, status bar, and commands
 - `src/types.ts`
-  - Core type definitions (`RunConfiguration`, `ConfigFile`, enums)
+  - Core type definitions (`RunConfiguration`, enums)
   - Default config factory + ID generator
 - `src/configStore.ts`
-  - Reads/writes `.vscode/python-run-configs.json`
+  - Reads/writes CharmRun-managed Python entries in `.vscode/launch.json`
+  - Can adopt existing unmanaged Python `debugpy` launch entries in place
   - Tracks active configuration ID in workspace state
   - Emits change events and watches file updates
 - `src/commands.ts`
@@ -48,7 +49,7 @@ CharmRun is a VS Code extension that manages Python run configurations via GUI a
 ## Data Ownership
 
 - Workspace-shared:
-  - `.vscode/python-run-configs.json`
+  - `.vscode/launch.json` for CharmRun-managed Python entries
 - User-local (not committed):
   - `workspaceState['charmrun.activeConfigId']`
 

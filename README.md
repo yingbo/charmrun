@@ -1,14 +1,17 @@
 # CharmRun
 
-PyCharm-style Python run configuration management for VS Code, with a GUI editor instead of manual `launch.json` editing.
+PyCharm-style Python run configuration management for VS Code, with a GUI editor for Python entries in `launch.json`.
 
 CharmRun lets you create named run/debug profiles (script or module), choose interpreter/args/env/cwd, and launch quickly from the sidebar, status bar, or command palette.
+
+![CharmRun configuration editor](docs/images/config-editor.png)
 
 ## Features
 
 - GUI editor for Python run configurations
 - Script mode (`python script.py`) and module mode (`python -m module_name`)
-- Workspace-local config storage in `.vscode/python-run-configs.json`
+- Uses `.vscode/launch.json` as the source of truth
+- Adopt existing Python `debugpy` launch configurations in place
 - Active configuration picker in status bar
 - Sidebar tree with inline Run/Debug actions
 - Run/debug current Python file without creating a config
@@ -34,13 +37,15 @@ Press `F5` in VS Code to launch an Extension Development Host.
 
 1. Open a workspace containing Python code.
 2. In the Activity Bar, open **CharmRun**.
-3. Click **Create Configuration**.
-4. Fill the form and save.
-5. Select the active configuration (status bar or command palette).
-6. Run or debug using:
+3. Click **Add Configuration**.
+4. Choose whether to create a new CharmRun-managed config or adopt an existing Python `launch.json` entry.
+5. Fill the form and save.
+6. Select the active configuration (status bar or command palette).
+7. Run or debug using:
    - status bar buttons (`play` / `bug`)
    - tree inline actions
    - command palette commands
+8. If you want to skip the combined flow, use `CharmRun: Create Configuration` to create directly or `CharmRun: Adopt launch.json Configuration` to adopt directly.
 
 ## Commands
 
@@ -48,18 +53,22 @@ Press `F5` in VS Code to launch an Extension Development Host.
 - `CharmRun: Debug Configuration` (`charmrun.debugConfiguration`)
 - `CharmRun: Run Current Python File` (`charmrun.runCurrentFile`)
 - `CharmRun: Debug Current Python File` (`charmrun.debugCurrentFile`)
+- `CharmRun: Add Configuration` (`charmrun.openConfigurationFlow`)
 - `CharmRun: Create Configuration` (`charmrun.createConfiguration`)
 - `CharmRun: Edit Configuration` (`charmrun.editConfiguration`)
 - `CharmRun: Delete Configuration` (`charmrun.deleteConfiguration`)
 - `CharmRun: Duplicate Configuration` (`charmrun.duplicateConfiguration`)
 - `CharmRun: Select Active Configuration` (`charmrun.selectActiveConfig`)
+- `CharmRun: Adopt launch.json Configuration` (`charmrun.adoptLaunchConfiguration`)
 - `CharmRun: Refresh Configurations` (`charmrun.refreshConfigurations`)
 
 ## Configuration File
 
-CharmRun stores configs at:
+CharmRun stores managed configs in:
 
-`<workspace>/.vscode/python-run-configs.json`
+`<workspace>/.vscode/launch.json`
+
+CharmRun only manages entries it created or explicitly adopted. Other `launch.json` entries are left untouched.
 
 See full format: [docs/CONFIG_FORMAT.md](docs/CONFIG_FORMAT.md)
 

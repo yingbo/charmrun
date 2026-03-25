@@ -13,6 +13,15 @@
     "Programming Languages"
   ],
   "activationEvents": [
+    "*",
+    "onView:charmrun.configurationsView",
+    "onCommand:charmrun.openConfigurationFlow",
+    "onCommand:charmrun.createConfiguration",
+    "onCommand:charmrun.adoptLaunchConfiguration",
+    "onCommand:charmrun.refreshConfigurations",
+    "onCommand:charmrun.selectActiveConfig",
+    "onCommand:charmrun.runConfiguration",
+    "onCommand:charmrun.debugConfiguration",
     "onLanguage:python",
     "workspaceContains:**/*.py"
   ],
@@ -40,7 +49,7 @@
     "viewsWelcome": [
       {
         "view": "charmrun.configurationsView",
-        "contents": "No run configurations found.\n[Create Configuration](command:charmrun.createConfiguration)"
+        "contents": "CharmRun stores managed Python run configurations in `.vscode/launch.json`.\n[Add Configuration](command:charmrun.openConfigurationFlow)"
       }
     ],
     "commands": [
@@ -65,6 +74,12 @@
         "command": "charmrun.debugCurrentFile",
         "title": "Debug Current Python File",
         "category": "CharmRun"
+      },
+      {
+        "command": "charmrun.openConfigurationFlow",
+        "title": "Add Configuration",
+        "category": "CharmRun",
+        "icon": "$(add)"
       },
       {
         "command": "charmrun.createConfiguration",
@@ -96,6 +111,11 @@
         "category": "CharmRun"
       },
       {
+        "command": "charmrun.adoptLaunchConfiguration",
+        "title": "Adopt launch.json Configuration",
+        "category": "CharmRun"
+      },
+      {
         "command": "charmrun.refreshConfigurations",
         "title": "Refresh Configurations",
         "category": "CharmRun",
@@ -117,7 +137,7 @@
     "menus": {
       "view/title": [
         {
-          "command": "charmrun.createConfiguration",
+          "command": "charmrun.openConfigurationFlow",
           "when": "view == charmrun.configurationsView",
           "group": "navigation"
         },
@@ -125,6 +145,11 @@
           "command": "charmrun.refreshConfigurations",
           "when": "view == charmrun.configurationsView",
           "group": "navigation"
+        },
+        {
+          "command": "charmrun.adoptLaunchConfiguration",
+          "when": "view == charmrun.configurationsView",
+          "group": "navigation@9"
         }
       ],
       "view/item/context": [
@@ -177,10 +202,13 @@
     "lint": "eslint src --ext ts"
   },
   "devDependencies": {
-    "@types/vscode": "^1.85.0",
     "@types/node": "^20.0.0",
-    "typescript": "^5.4.0",
-    "esbuild": "^0.20.0",
-    "npm-run-all": "^4.1.5"
+    "@types/vscode": "^1.85.0",
+    "esbuild": "^0.27.4",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.4.0"
+  },
+  "dependencies": {
+    "jsonc-parser": "^3.3.1"
   }
 }

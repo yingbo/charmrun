@@ -95,6 +95,7 @@ export class Runner {
     }
 
     const debugConfig: vscode.DebugConfiguration = {
+      ...(config.extra ?? {}),
       name: config.name,
       type: 'debugpy',
       request: 'launch',
@@ -103,7 +104,7 @@ export class Runner {
       cwd: resolver.resolve(config.cwd),
       env: resolver.resolveRecord(config.env),
       console: TERMINAL_MAP[config.terminal] || 'integratedTerminal',
-      justMyCode: true,
+      justMyCode: (config.extra?.justMyCode as boolean | undefined) ?? true,
     };
 
     if (config.runType === 'script') {
