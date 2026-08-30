@@ -12,6 +12,7 @@ export interface RunConfiguration {
   args: string[];
   cwd: string;
   env: Record<string, string>;
+  envFile: string;
   terminal: TerminalType;
   runMode: RunMode;
   extra?: Record<string, unknown>;
@@ -28,6 +29,7 @@ export function createDefaultConfig(name: string): RunConfiguration {
     args: [],
     cwd: '${workspaceFolder}',
     env: {},
+    envFile: '',
     terminal: 'integrated',
     runMode: 'run',
     extra: {

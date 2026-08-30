@@ -2,6 +2,12 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.0.1] - 2026-08-30
+
+### Added
+
+- Env File support for run configurations (`envFile`), passed through to `debugpy`'s `envFile` option. New configurations default to `${workspaceFolder}/.env` when a `.env` file is present in the project root.
+
 ## [0.1.0] - 2026-03-11
 
 ### Added
