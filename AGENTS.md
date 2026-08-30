@@ -34,6 +34,7 @@ management with a GUI editor. Built with TypeScript and esbuild.
 - `src/types.ts` - RunConfiguration interface and related types
 - `src/configStore.ts` - CRUD for CharmRun-managed Python entries in .vscode/launch.json
 - `src/runner.ts` - Build debug configs, launch via vscode.debug.startDebugging
+- `src/preRunRunner.ts` - Execute before-launch steps (config/external tool/task)
 - `src/variableResolver.ts` - ${workspaceFolder}, ${file}, ${env:VAR} expansion
 - `src/interpreterResolver.ts` - Resolve Python interpreter path
 - `src/treeView/` - Sidebar tree view for listing configurations
