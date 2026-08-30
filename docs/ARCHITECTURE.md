@@ -19,8 +19,13 @@ CharmRun is a VS Code extension that manages Python run configurations via GUI a
   - Registers all extension commands and command handlers
 - `src/runner.ts`
   - Validates configuration
+  - Runs before-launch steps and aborts the launch when one fails
   - Resolves interpreter and variables
   - Builds `vscode.DebugConfiguration` and launches with `startDebugging`
+- `src/preRunRunner.ts`
+  - Executes before-launch steps in order (configuration / external tool / task)
+  - Reports progress in a cancellable notification and logs to the
+    `CharmRun Before Launch` output channel
 - `src/interpreterResolver.ts`
   - Resolves custom/selected interpreter with fallback chain
 - `src/variableResolver.ts`
@@ -37,6 +42,10 @@ CharmRun is a VS Code extension that manages Python run configurations via GUI a
 1. User triggers a run/debug command.
 2. Command handler loads active or selected config from `ConfigStore`.
 3. `Runner.execute` validates mandatory fields.
+3a. `PreRunRunner` runs the enabled before-launch steps in order. A referenced
+    configuration runs to completion (its own before-launch steps included)
+    before the next step starts; any failure, non-zero exit, cancellation, or
+    circular reference aborts the launch.
 4. `InterpreterResolver` resolves executable path/command.
 5. `VariableResolver` expands placeholders in config fields.
 6. `Runner` builds debug config:
