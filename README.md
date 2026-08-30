@@ -12,6 +12,7 @@ CharmRun lets you create named run/debug profiles (script or module), choose int
 - Script mode (`python script.py`) and module mode (`python -m module_name`)
 - Uses `.vscode/launch.json` as the source of truth
 - Adopt existing Python `debugpy` launch configurations in place
+- Before-launch steps: run another configuration, an external tool, or a VS Code task first
 - Active configuration picker in status bar
 - Sidebar tree with inline Run/Debug actions
 - Run/debug current Python file without creating a config
@@ -72,6 +73,27 @@ CharmRun only manages entries it created or explicitly adopted. Other `launch.js
 
 See full format: [docs/CONFIG_FORMAT.md](docs/CONFIG_FORMAT.md)
 
+## Before Launch Steps
+
+Each configuration can run a list of steps before it launches, in the order you
+arrange them in the **Before Launch** section of the editor:
+
+- **Run another configuration** - pick any other CharmRun configuration in the
+  same workspace folder from a dropdown. It runs to completion (including its
+  own before-launch steps) before the next step starts.
+- **Run external tool** - a command with arguments and a working directory. A
+  non-zero exit code aborts the launch.
+- **Run task** - a VS Code task, chosen from the tasks available in the
+  workspace. A non-zero task exit code aborts the launch.
+
+Steps can be reordered, disabled without being deleted, and cancelled while they
+run (progress appears as a notification). Output and failures are written to the
+`CharmRun Before Launch` output channel. Circular references between
+configurations are detected and reported instead of looping.
+
+Steps are stored with the configuration in `launch.json` under `charmrunPreRun`,
+so they are shared with the rest of the team.
+
 ## Variable Expansion
 
 Supported placeholders:
@@ -92,6 +114,7 @@ Applied to:
 - `args`
 - `cwd`
 - `env` values
+- before-launch external tool `command`, `args`, and `cwd`
 
 ## Interpreter Resolution
 

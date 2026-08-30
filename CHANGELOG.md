@@ -2,6 +2,24 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.1.0] - 2026-08-30
+
+### Added
+
+- Before-launch (pre-run) steps on every run configuration, PyCharm-style.
+- Step types: run another CharmRun configuration (picked from a dropdown of
+  configurations in the same workspace folder), run an external tool
+  (command + arguments + working directory), or run a VS Code task.
+- Before Launch section in the configuration editor: add, reorder, enable or
+  disable, and remove steps.
+- Steps run in order before the main launch; a failing, cancelled, or
+  non-zero-exit step aborts the launch.
+- Circular before-launch references are detected and reported instead of
+  recursing.
+- Step output and failures are logged to the `CharmRun Before Launch` output
+  channel; progress is shown in a cancellable notification.
+- Steps are persisted in `launch.json` under `charmrunPreRun`.
+
 ## [0.1.0] - 2026-03-11
 
 ### Added

@@ -26,7 +26,19 @@ CharmRun only manages Python `debugpy` launch entries that it created itself or 
       "justMyCode": true,
       "charmrunManaged": true,
       "charmrunId": "uuid-v4-like-string",
-      "charmrunRunMode": "run"
+      "charmrunRunMode": "run",
+      "charmrunPreRun": [
+        {
+          "id": "uuid-v4-like-string",
+          "type": "externalTool",
+          "enabled": true,
+          "configId": "",
+          "command": "npm",
+          "args": ["run", "build"],
+          "cwd": "${workspaceFolder}",
+          "task": ""
+        }
+      ]
     }
   ]
 }
@@ -44,12 +56,43 @@ CharmRun only manages Python `debugpy` launch entries that it created itself or 
 - `env` -> `env`
 - `terminal` -> `console`
 - `runMode` -> `charmrunRunMode`
+- `preRun` -> `charmrunPreRun` (omitted when there are no steps)
 
 CharmRun metadata:
 
 - `charmrunManaged: true`
 - `charmrunId: string`
 - `charmrunRunMode: "run" | "debug"`
+- `charmrunPreRun: PreRunStep[]`
+
+## Before Launch Steps
+
+Each entry in `charmrunPreRun` describes one step to run before the
+configuration launches. Steps run in array order; disabled steps are skipped.
+
+| Field | Applies to | Meaning |
+|-------|-----------|---------|
+| `id` | all | Stable step identifier |
+| `type` | all | `configuration`, `externalTool`, or `task` |
+| `enabled` | all | `false` skips the step without deleting it |
+| `configId` | `configuration` | `charmrunId` of another managed configuration |
+| `command` | `externalTool` | Executable or command to run |
+| `args` | `externalTool` | Arguments passed to the command |
+| `cwd` | `externalTool` | Working directory (defaults to the workspace folder) |
+| `task` | `task` | Task label, e.g. `build` or `npm: test` |
+
+Behavior:
+
+- A step of type `configuration` launches the referenced configuration and waits
+  for its debug session to terminate. VS Code exposes no exit code for debug
+  sessions, so such a step fails only when the configuration cannot start.
+- A step of type `externalTool` fails on a non-zero exit code, and its output is
+  written to the `CharmRun Before Launch` output channel.
+- A step of type `task` fails on a non-zero task process exit code.
+- Circular references between configurations are rejected when the step is
+  reached, instead of recursing.
+- `${...}` placeholders are expanded in `command`, `args`, and `cwd`.
+- Unknown step types are dropped when `launch.json` is read.
 
 ## Adoption
 
