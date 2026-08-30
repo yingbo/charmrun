@@ -25,14 +25,48 @@ CharmRun lets you create named run/debug profiles (script or module), choose int
 - Python installed and available in environment
 - Recommended: VS Code Python extension (CharmRun can fall back to configured/default PATH interpreters)
 
-## Install (Development)
+## Install
+
+### Cursor, Windsurf, VSCodium
+
+These editors resolve extensions from [Open VSX](https://open-vsx.org) rather
+than the VS Code Marketplace. Search for **CharmRun** in the Extensions panel,
+or install from the command line:
+
+```bash
+cursor --install-extension yingbo.charmrun
+```
+
+### VS Code
+
+Search for **CharmRun** in the Extensions panel, or:
+
+```bash
+code --install-extension yingbo.charmrun
+```
+
+### From a VSIX
+
+Every release attaches `charmrun.vsix` to its
+[GitHub release](https://github.com/yingbo/charmrun/releases). Download it and
+install with either editor:
+
+```bash
+cursor --install-extension charmrun.vsix
+code --install-extension charmrun.vsix
+```
+
+In the UI: **Extensions → ... menu → Install from VSIX...**
+
+### From source
 
 ```bash
 npm install
 npm run compile
 ```
 
-Press `F5` in VS Code to launch an Extension Development Host.
+Press `F5` in VS Code to launch an Extension Development Host. To build an
+installable package instead, run `npm run vsix`.
 
 ## Usage
 
@@ -131,11 +165,15 @@ If a custom interpreter path/command is provided, CharmRun validates it before l
 - `npm run compile`: Type-check + esbuild bundle
 - `npm run watch`: Type-check + bundling in watch mode
 - `npm run package`: Production bundle for publishing
+- `npm run vsix`: Build an installable `charmrun.vsix`
+- `npm run publish:openvsx`: Publish the VSIX to Open VSX (Cursor)
+- `npm run publish:marketplace`: Publish the VSIX to the VS Code Marketplace
 
 ## Project Docs
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [docs/CONFIG_FORMAT.md](docs/CONFIG_FORMAT.md)
+- [docs/PUBLISHING.md](docs/PUBLISHING.md)
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [FEATURE_SPEC.md](FEATURE_SPEC.md)
 - [worklog.md](worklog.md)
