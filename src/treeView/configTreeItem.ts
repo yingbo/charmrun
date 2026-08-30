@@ -32,6 +32,12 @@ export class ConfigTreeItem extends vscode.TreeItem {
     if (this.config.args.length > 0) {
       parts.push(`Args: ${this.config.args.join(' ')}`);
     }
+    const preRunCount = this.config.preRun.filter((step) => step.enabled).length;
+    if (preRunCount > 0) {
+      parts.push(
+        `Before launch: ${preRunCount} step${preRunCount === 1 ? '' : 's'}`
+      );
+    }
     return parts.join('\n');
   }
 

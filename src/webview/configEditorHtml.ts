@@ -1,15 +1,22 @@
 import * as vscode from 'vscode';
 import { RunConfiguration } from '../types';
 
+export interface EditorContext {
+  /** Other CharmRun configurations that a before-launch step can run. */
+  availableConfigs: { id: string; name: string }[];
+  /** Task labels available in the workspace. */
+  availableTasks: string[];
+}
+
 export function getEditorHtml(
   webview: vscode.Webview,
   config: RunConfiguration,
-  nonce: string
+  nonce: string,
+  context: EditorContext
 ): string {
-  const configJson = JSON.stringify(config)
-    .replace(/</g, '\\u003c')
-    .replace(/>/g, '\\u003e')
-    .replace(/&/g, '\\u0026');
+  const configJson = toScriptJson(config);
+  const availableConfigsJson = toScriptJson(context.availableConfigs);
+  const availableTasksJson = toScriptJson(context.availableTasks);
 
   return `<!DOCTYPE html>
 <html lang="en">
@@ -141,6 +148,54 @@ export function getEditorHtml(
     .hidden {
       display: none;
     }
+    .prerun-row {
+      border: 1px solid var(--vscode-panel-border, rgba(128,128,128,0.35));
+      border-radius: 2px;
+      padding: 8px;
+      margin-bottom: 8px;
+    }
+    .prerun-head {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .prerun-head select {
+      flex: 1;
+    }
+    .prerun-head input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
+    .prerun-fields {
+      margin-top: 8px;
+    }
+    .prerun-fields label {
+      display: block;
+      margin: 6px 0 4px 0;
+      font-size: 11px;
+      text-transform: uppercase;
+      color: var(--vscode-descriptionForeground);
+    }
+    .prerun-empty {
+      color: var(--vscode-descriptionForeground);
+      font-size: 12px;
+      margin-bottom: 8px;
+    }
+    .icon-btn {
+      padding: 4px 8px;
+      background: transparent;
+      color: var(--vscode-foreground);
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+    }
+    .icon-btn:hover {
+      background: var(--vscode-toolbar-hoverBackground, rgba(128,128,128,0.2));
+    }
+    .icon-btn:disabled {
+      opacity: 0.4;
+      cursor: default;
+    }
     .section-label {
       font-size: 13px;
       font-weight: 600;
@@ -237,6 +292,21 @@ export function getEditorHtml(
     </select>
   </div>
 
+  <div class="form-group">
+    <div class="section-label">Before Launch</div>
+    <div id="prerun-container"></div>
+    <div class="form-row">
+      <div class="field">
+        <select id="prerun-type">
+          <option value="configuration">Run another configuration</option>
+          <option value="externalTool">Run external tool</option>
+          <option value="task">Run task</option>
+        </select>
+      </div>
+      <button class="add-btn" id="add-prerun">+ Add Step</button>
+    </div>
+  </div>
+
   <div class="button-bar">
     <button class="secondary-btn" id="cancel-btn">Cancel</button>
     <button class="primary-btn" id="save-btn">Save</button>
@@ -246,6 +316,9 @@ export function getEditorHtml(
     (function() {
       const vscode = acquireVsCodeApi();
       const initialConfig = ${configJson};
+      const availableConfigs = ${availableConfigsJson};
+      const availableTasks = ${availableTasksJson};
+      let preRunSteps = [];
 
       // Elements
       const nameEl = document.getElementById('name');
@@ -262,6 +335,8 @@ export function getEditorHtml(
       const terminalEl = document.getElementById('terminal');
       const runModeEl = document.getElementById('runMode');
       const envContainer = document.getElementById('env-container');
+      const preRunContainer = document.getElementById('prerun-container');
+      const preRunTypeEl = document.getElementById('prerun-type');
 
       function populateForm(config) {
         nameEl.value = config.name || '';
@@ -283,6 +358,18 @@ export function getEditorHtml(
 
         toggleRunType();
         toggleInterpreter();
+
+        preRunSteps = (config.preRun || []).map(step => ({
+          id: step.id,
+          type: step.type,
+          enabled: step.enabled !== false,
+          configId: step.configId || '',
+          command: step.command || '',
+          argsText: (step.args || []).join(' '),
+          cwd: step.cwd || '',
+          task: step.task || '',
+        }));
+        renderPreRun();
 
         envContainer.innerHTML = '';
         const env = config.env || {};
@@ -318,6 +405,184 @@ export function getEditorHtml(
         envContainer.appendChild(row);
       }
 
+      function makeId() {
+        return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, c => {
+          const r = Math.random() * 16 | 0;
+          const v = c === 'x' ? r : (r & 0x3 | 0x8);
+          return v.toString(16);
+        });
+      }
+
+      function renderPreRun() {
+        preRunContainer.innerHTML = '';
+
+        if (preRunSteps.length === 0) {
+          const empty = document.createElement('div');
+          empty.className = 'prerun-empty';
+          empty.textContent = 'No before-launch steps. Steps run in order, top to bottom.';
+          preRunContainer.appendChild(empty);
+          return;
+        }
+
+        preRunSteps.forEach((step, index) => {
+          preRunContainer.appendChild(buildPreRunRow(step, index));
+        });
+      }
+
+      function buildPreRunRow(step, index) {
+        const row = document.createElement('div');
+        row.className = 'prerun-row';
+
+        const head = document.createElement('div');
+        head.className = 'prerun-head';
+
+        const enabledEl = document.createElement('input');
+        enabledEl.type = 'checkbox';
+        enabledEl.checked = step.enabled;
+        enabledEl.title = 'Enable this step';
+        enabledEl.addEventListener('change', () => {
+          step.enabled = enabledEl.checked;
+        });
+
+        const typeEl = document.createElement('select');
+        [
+          ['configuration', 'Run another configuration'],
+          ['externalTool', 'Run external tool'],
+          ['task', 'Run task'],
+        ].forEach(([value, label]) => {
+          typeEl.appendChild(makeOption(value, label));
+        });
+        typeEl.value = step.type;
+        typeEl.addEventListener('change', () => {
+          step.type = typeEl.value;
+          renderPreRun();
+        });
+
+        head.appendChild(enabledEl);
+        head.appendChild(typeEl);
+        head.appendChild(makeIconButton('\u25B2', 'Move up', index === 0, () => movePreRunStep(index, -1)));
+        head.appendChild(makeIconButton('\u25BC', 'Move down', index === preRunSteps.length - 1, () => movePreRunStep(index, 1)));
+        head.appendChild(makeIconButton('\u00D7', 'Remove step', false, () => {
+          preRunSteps.splice(index, 1);
+          renderPreRun();
+        }));
+
+        const fields = document.createElement('div');
+        fields.className = 'prerun-fields';
+        buildPreRunFields(step, fields);
+
+        row.appendChild(head);
+        row.appendChild(fields);
+        return row;
+      }
+
+      function buildPreRunFields(step, container) {
+        if (step.type === 'configuration') {
+          if (availableConfigs.length === 0 && !step.configId) {
+            const note = document.createElement('div');
+            note.className = 'prerun-empty';
+            note.textContent = 'No other configurations in this workspace folder yet.';
+            container.appendChild(note);
+            return;
+          }
+
+          const select = document.createElement('select');
+          select.appendChild(makeOption('', 'Select a configuration...'));
+          availableConfigs.forEach(item => {
+            select.appendChild(makeOption(item.id, item.name));
+          });
+          if (step.configId && !availableConfigs.some(item => item.id === step.configId)) {
+            select.appendChild(makeOption(step.configId, 'Unknown configuration (' + step.configId + ')'));
+          }
+          select.value = step.configId || '';
+          select.addEventListener('change', () => {
+            step.configId = select.value;
+          });
+          container.appendChild(makeLabel('Configuration'));
+          container.appendChild(select);
+          return;
+        }
+
+        if (step.type === 'task') {
+          if (availableTasks.length > 0) {
+            const select = document.createElement('select');
+            select.appendChild(makeOption('', 'Select a task...'));
+            availableTasks.forEach(label => select.appendChild(makeOption(label, label)));
+            if (step.task && availableTasks.indexOf(step.task) === -1) {
+              select.appendChild(makeOption(step.task, step.task));
+            }
+            select.value = step.task || '';
+            select.addEventListener('change', () => {
+              step.task = select.value;
+            });
+            container.appendChild(makeLabel('Task'));
+            container.appendChild(select);
+            return;
+          }
+
+          container.appendChild(makeLabel('Task Label'));
+          container.appendChild(makeTextInput(step.task, 'e.g. build', value => {
+            step.task = value;
+          }));
+          return;
+        }
+
+        container.appendChild(makeLabel('Command'));
+        container.appendChild(makeTextInput(step.command, 'e.g. npm', value => {
+          step.command = value;
+        }));
+        container.appendChild(makeLabel('Arguments'));
+        container.appendChild(makeTextInput(step.argsText, 'e.g. run build', value => {
+          step.argsText = value;
+        }));
+        container.appendChild(makeLabel('Working Directory'));
+        container.appendChild(makeTextInput(step.cwd, '\${workspaceFolder}', value => {
+          step.cwd = value;
+        }));
+      }
+
+      function movePreRunStep(index, delta) {
+        const target = index + delta;
+        if (target < 0 || target >= preRunSteps.length) {
+          return;
+        }
+        const [step] = preRunSteps.splice(index, 1);
+        preRunSteps.splice(target, 0, step);
+        renderPreRun();
+      }
+
+      function makeOption(value, label) {
+        const option = document.createElement('option');
+        option.value = value;
+        option.textContent = label;
+        return option;
+      }
+
+      function makeLabel(text) {
+        const label = document.createElement('label');
+        label.textContent = text;
+        return label;
+      }
+
+      function makeTextInput(value, placeholder, onChange) {
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.value = value || '';
+        input.placeholder = placeholder;
+        input.addEventListener('input', () => onChange(input.value));
+        return input;
+      }
+
+      function makeIconButton(text, title, disabled, onClick) {
+        const button = document.createElement('button');
+        button.className = 'icon-btn';
+        button.textContent = text;
+        button.title = title;
+        button.disabled = disabled;
+        button.addEventListener('click', onClick);
+        return button;
+      }
+
       function escapeHtml(str) {
         return str.replace(/&/g, '&amp;').replace(/"/g, '&quot;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
       }
@@ -351,6 +616,16 @@ export function getEditorHtml(
           env: env,
           terminal: terminalEl.value,
           runMode: runModeEl.value,
+          preRun: preRunSteps.map(step => ({
+            id: step.id,
+            type: step.type,
+            enabled: step.enabled,
+            configId: step.configId,
+            command: step.command,
+            args: step.argsText.trim() ? parseArgs(step.argsText.trim()) : [],
+            cwd: step.cwd,
+            task: step.task,
+          })),
           extra: initialConfig.extra || {},
         };
       }
@@ -386,6 +661,20 @@ export function getEditorHtml(
       runTypeEl.addEventListener('change', toggleRunType);
       interpreterSelectEl.addEventListener('change', toggleInterpreter);
       document.getElementById('add-env').addEventListener('click', () => addEnvRow('', ''));
+
+      document.getElementById('add-prerun').addEventListener('click', () => {
+        preRunSteps.push({
+          id: makeId(),
+          type: preRunTypeEl.value,
+          enabled: true,
+          configId: '',
+          command: '',
+          argsText: '',
+          cwd: '\${workspaceFolder}',
+          task: '',
+        });
+        renderPreRun();
+      });
 
       document.getElementById('save-btn').addEventListener('click', () => {
         const config = collectFormData();
@@ -436,6 +725,13 @@ export function getEditorHtml(
   </script>
 </body>
 </html>`;
+}
+
+function toScriptJson(value: unknown): string {
+  return JSON.stringify(value)
+    .replace(/</g, '\\u003c')
+    .replace(/>/g, '\\u003e')
+    .replace(/&/g, '\\u0026');
 }
 
 export function getNonce(): string {
