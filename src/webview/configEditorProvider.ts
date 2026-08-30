@@ -1,8 +1,12 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
-import { RunConfiguration, createDefaultConfig } from '../types';
+import {
+  RunConfiguration,
+  createDefaultConfig,
+  normalizePreRunSteps,
+} from '../types';
 import { ConfigStore } from '../configStore';
-import { getEditorHtml, getNonce } from './configEditorHtml';
+import { EditorContext, getEditorHtml, getNonce } from './configEditorHtml';
 
 export class ConfigEditorProvider implements vscode.Disposable {
   private panel: vscode.WebviewPanel | undefined;
@@ -52,8 +56,41 @@ export class ConfigEditorProvider implements vscode.Disposable {
     this.panel.webview.html = getEditorHtml(
       this.panel.webview,
       editConfig,
-      nonce
+      nonce,
+      await this.buildEditorContext(folder, editConfig.id)
     );
+  }
+
+  /**
+   * Collects the choices the before-launch section needs: sibling
+   * configurations to run, and task labels available in the workspace.
+   */
+  private async buildEditorContext(
+    folder: vscode.WorkspaceFolder,
+    currentConfigId: string
+  ): Promise<EditorContext> {
+    const availableConfigs = this.configStore
+      .getConfigurations(folder)
+      .filter((config) => config.id !== currentConfigId)
+      .map((config) => ({ id: config.id, name: config.name }));
+
+    let availableTasks: string[] = [];
+    try {
+      const tasks = await vscode.tasks.fetchTasks();
+      availableTasks = Array.from(
+        new Set(
+          tasks.map((task) =>
+            task.source && task.source !== 'Workspace'
+              ? `${task.source}: ${task.name}`
+              : task.name
+          )
+        )
+      ).sort((a, b) => a.localeCompare(b));
+    } catch {
+      availableTasks = [];
+    }
+
+    return { availableConfigs, availableTasks };
   }
 
   private async handleMessage(message: { command: string; [key: string]: unknown }): Promise<void> {
@@ -63,6 +100,9 @@ export class ConfigEditorProvider implements vscode.Disposable {
         if (!this.currentFolder) {
           return;
         }
+        config.preRun = normalizePreRunSteps(config.preRun).filter(
+          (step) => step.configId !== config.id
+        );
         if (this.isNew) {
           this.configStore.addConfiguration(this.currentFolder, config);
         } else {
