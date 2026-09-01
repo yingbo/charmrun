@@ -52,7 +52,7 @@ CharmRun is a VS Code extension that manages Python run configurations via GUI a
    - `type: debugpy`
    - `request: launch`
    - `program` (script mode) or `module` (module mode)
-   - `python`, `args`, `cwd`, `env`, `console`
+   - `python`, `args`, `cwd`, `env`, `envFile`, `console`
 7. Extension calls `vscode.debug.startDebugging(..., { noDebug })`.
 
 ## Data Ownership
