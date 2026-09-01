@@ -2,7 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
-## [Unreleased]
+## [1.1.1] - 2026-09-01
+
+### Changed
+
+- Removed the `*` activation event. CharmRun now activates only when it is
+  actually needed - a workspace containing Python files or a `.vscode/launch.json`,
+  an open Python file, the CharmRun view, or one of its commands - instead of on
+  every window. This removes CharmRun from the startup path of unrelated
+  workspaces and clears the packaging warning raised by `vsce`.
 
 ### Added
 
