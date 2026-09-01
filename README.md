@@ -29,12 +29,12 @@ CharmRun lets you create named run/debug profiles (script or module), choose int
 
 ### Cursor, Windsurf, VSCodium
 
-These editors resolve extensions from [Open VSX](https://open-vsx.org) rather
-than the VS Code Marketplace. Search for **CharmRun** in the Extensions panel,
-or install from the command line:
+These editors do not read the VS Code Marketplace, so CharmRun is not
+searchable in their Extensions panels. Install the `.vsix` from the
+[latest release](https://github.com/yingbo/charmrun/releases/latest):
 
 ```bash
-cursor --install-extension yingbo.charmrun
+cursor --install-extension charmrun.vsix
 ```
 
 ### VS Code
@@ -166,7 +166,6 @@ If a custom interpreter path/command is provided, CharmRun validates it before l
 - `npm run watch`: Type-check + bundling in watch mode
 - `npm run package`: Production bundle for publishing
 - `npm run vsix`: Build an installable `charmrun.vsix`
-- `npm run publish:openvsx`: Publish the VSIX to Open VSX (Cursor)
 - `npm run publish:marketplace`: Publish the VSIX to the VS Code Marketplace
 
 ## Project Docs
