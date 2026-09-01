@@ -2,7 +2,7 @@
   "name": "charmrun",
   "displayName": "CharmRun - Python Run Configs",
   "description": "PyCharm-style Python run configuration manager with GUI editor",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "publisher": "yingbo",
   "author": {
     "name": "yingbo",

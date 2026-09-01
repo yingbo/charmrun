@@ -33,6 +33,7 @@ export interface RunConfiguration {
   args: string[];
   cwd: string;
   env: Record<string, string>;
+  envFile: string;
   terminal: TerminalType;
   runMode: RunMode;
   preRun: PreRunStep[];
@@ -50,6 +51,7 @@ export function createDefaultConfig(name: string): RunConfiguration {
     args: [],
     cwd: '${workspaceFolder}',
     env: {},
+    envFile: '',
     terminal: 'integrated',
     runMode: 'run',
     preRun: [],
