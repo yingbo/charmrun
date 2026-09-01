@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import {
   RunConfiguration,
   createDefaultConfig,
@@ -24,7 +25,7 @@ export class ConfigEditorProvider implements vscode.Disposable {
   ): Promise<void> {
     this.currentFolder = folder;
     this.isNew = !config;
-    const editConfig = config ?? createDefaultConfig('New Configuration');
+    const editConfig = config ?? this.createDefaultConfigForFolder(folder);
 
     if (this.panel) {
       this.panel.reveal(vscode.ViewColumn.Active);
@@ -59,6 +60,17 @@ export class ConfigEditorProvider implements vscode.Disposable {
       nonce,
       await this.buildEditorContext(folder, editConfig.id)
     );
+  }
+
+  private createDefaultConfigForFolder(
+    folder: vscode.WorkspaceFolder
+  ): RunConfiguration {
+    const config = createDefaultConfig('New Configuration');
+    const envFilePath = path.join(folder.uri.fsPath, '.env');
+    if (fs.existsSync(envFilePath)) {
+      config.envFile = '${workspaceFolder}/.env';
+    }
+    return config;
   }
 
   /**
@@ -150,6 +162,28 @@ export class ConfigEditorProvider implements vscode.Disposable {
             command: 'setFilePath',
             field: 'interpreter',
             path: result[0].fsPath,
+          });
+        }
+        break;
+      }
+
+      case 'browseEnvFile': {
+        const result = await vscode.window.showOpenDialog({
+          canSelectFiles: true,
+          canSelectFolders: false,
+          canSelectMany: false,
+          openLabel: 'Select Env File',
+          defaultUri: this.currentFolder?.uri,
+        });
+        if (result && result[0] && this.currentFolder) {
+          const relativePath = path.relative(
+            this.currentFolder.uri.fsPath,
+            result[0].fsPath
+          );
+          this.panel?.webview.postMessage({
+            command: 'setFilePath',
+            field: 'envFile',
+            path: relativePath,
           });
         }
         break;

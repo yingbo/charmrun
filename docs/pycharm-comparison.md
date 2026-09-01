@@ -20,7 +20,7 @@ PyCharm's Run/Debug tool window keeps a history of recent launches, lets you **r
 
 ## 5. Environment file and per-run environment management
 
-PyCharm supports loading environment variables from a `.env` file (via EnvFile) per configuration, plus "modify options" toggles like storing a config as a project file vs. local-only, or excluding it from version control. CharmRun's env support (per `FEATURE_SPEC.md`/`types.ts`) is limited to explicit key/value pairs and `${env:NAME}` expansion — there's no `.env` file loading and no per-config sharing/visibility controls.
+PyCharm supports loading environment variables from a `.env` file (via EnvFile) per configuration, plus "modify options" toggles like storing a config as a project file vs. local-only, or excluding it from version control. CharmRun now supports this too: each configuration has an **Env File** field (`envFile` in `types.ts`) that is passed straight through to `debugpy`'s `envFile` option, on top of the existing explicit key/value pairs and `${env:NAME}` expansion. When you create a new configuration and a `.env` file exists in the workspace root, CharmRun finds it automatically and sets it as the default Env File (`${workspaceFolder}/.env`); you can browse to a different file or clear it. Per-config sharing/visibility controls (project file vs. local-only) are still not supported.
 
 ---
 

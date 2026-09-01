@@ -31,6 +31,7 @@ type LaunchConfiguration = Record<string, unknown> & {
   args?: unknown;
   cwd?: string;
   env?: Record<string, unknown>;
+  envFile?: string;
   console?: string;
   noDebug?: boolean;
   charmrunManaged?: boolean;
@@ -55,6 +56,7 @@ const KNOWN_DEBUG_KEYS = new Set([
   'args',
   'cwd',
   'env',
+  'envFile',
   'console',
   'noDebug',
   CHARMRUN_MANAGED_KEY,
@@ -377,6 +379,7 @@ export class ConfigStore implements vscode.Disposable {
         ? entry.cwd
         : '${workspaceFolder}',
       env,
+      envFile: typeof entry.envFile === 'string' ? entry.envFile : '',
       terminal: this.fromLaunchConsole(entry.console),
       runMode: this.fromLaunchRunMode(entry),
       preRun: normalizePreRunSteps(entry[CHARMRUN_PRE_RUN_KEY]),
@@ -408,6 +411,10 @@ export class ConfigStore implements vscode.Disposable {
 
     if (config.interpreter !== 'selected') {
       launchConfig.python = config.interpreter;
+    }
+
+    if (config.envFile && config.envFile.trim()) {
+      launchConfig.envFile = config.envFile;
     }
 
     if (config.preRun.length > 0) {

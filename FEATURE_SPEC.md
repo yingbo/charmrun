@@ -181,6 +181,8 @@ DEBUG=true
 
 Multiple variables supported.
 
+Optionally, an **Env File** (`.env`) can also be set per configuration; its variables are loaded in addition to the explicit key/value pairs above. When creating a new configuration, CharmRun looks for a `.env` file in the project root and, if found, sets it as the default Env File.
+
 ---
 
 ## 4.9 Terminal Type

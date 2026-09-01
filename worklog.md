@@ -35,6 +35,7 @@ src/
 - `args` - string array
 - `cwd` - working directory with variable support
 - `env` - key-value environment variables
+- `envFile` - path to a `.env` file, passed through to `debugpy`'s `envFile`
 - `terminal` - "integrated" | "external" | "internalConsole"
 - `runMode` - "run" | "debug"
 
@@ -78,7 +79,7 @@ Active config ID stored in `workspaceState` (per-user, not committed to VCS).
 
 ### Webview Editor
 - Full HTML form with VS Code theme CSS variables
-- Fields: Name, Run Type, Script/Module, Interpreter, Args, CWD, Env Vars, Terminal, Run Mode
+- Fields: Name, Run Type, Script/Module, Interpreter, Args, CWD, Env Vars, Env File, Terminal, Run Mode
 - Browse buttons for file/folder pickers via `showOpenDialog`
 - Dynamic env variable rows (add/remove)
 - Args parsed with quote-aware splitting
@@ -128,6 +129,18 @@ PyCharm-style pre-run steps attached to each configuration.
   reorder (up/down), remove; configuration steps use a dropdown of the other
   configurations in the same workspace folder, task steps a dropdown of
   workspace tasks. `ConfigEditorProvider.buildEditorContext()` supplies both.
+
+## Env File (1.2.0)
+
+- `envFile` on every configuration, surfaced as the **Env File** field in the
+  editor with a browse button, and written to `launch.json` as debugpy's
+  standard `envFile` option.
+- `Runner` resolves the value through `VariableResolver` and makes it absolute
+  against the workspace folder before handing it to the debug session.
+- New configurations default to `${workspaceFolder}/.env` when a `.env` file
+  exists in the workspace root (`ConfigEditorProvider.createDefaultConfigForFolder()`).
+- `envFile` is a managed key, so it is no longer round-tripped as an unknown
+  passthrough field.
 
 ## Build
 

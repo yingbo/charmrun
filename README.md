@@ -148,6 +148,7 @@ Applied to:
 - `args`
 - `cwd`
 - `env` values
+- `envFile`
 - before-launch external tool `command`, `args`, and `cwd`
 
 ## Interpreter Resolution
