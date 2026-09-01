@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- Distribution setup so CharmRun can be installed from Cursor: `npm run vsix`
+  builds a VSIX, and `npm run publish:openvsx` / `npm run publish:marketplace`
+  publish it to Open VSX and the VS Code Marketplace.
+- `Release` GitHub Actions workflow that builds the VSIX on a `v*` tag, attaches
+  it to the GitHub release, and publishes to Open VSX (and the Marketplace when
+  `VSCE_PAT` is configured).
+- `docs/PUBLISHING.md` with registry setup and release steps.
+
 ## [1.1.0] - 2026-08-30
 
 ### Added
