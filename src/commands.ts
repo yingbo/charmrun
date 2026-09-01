@@ -13,7 +13,8 @@ export function registerCommands(
   editorProvider: ConfigEditorProvider,
   statusBar: StatusBarManager
 ): void {
-  const runner = new Runner();
+  const runner = new Runner(configStore);
+  context.subscriptions.push(runner);
 
   // Run the active configuration
   context.subscriptions.push(
