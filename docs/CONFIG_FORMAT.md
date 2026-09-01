@@ -54,6 +54,7 @@ CharmRun only manages Python `debugpy` launch entries that it created itself or 
 - `args` -> `args`
 - `cwd` -> `cwd`
 - `env` -> `env`
+- `envFile` -> `envFile` (omitted when empty)
 - `terminal` -> `console`
 - `runMode` -> `charmrunRunMode`
 - `preRun` -> `charmrunPreRun` (omitted when there are no steps)
@@ -100,7 +101,7 @@ Use `CharmRun: Adopt launch.json Configuration` to take over an existing Python 
 
 ## Preserved Fields
 
-CharmRun preserves unknown fields on managed Python launch entries. Existing fields such as `justMyCode`, `subProcess`, or `envFile` remain in `launch.json` when you edit the config in the GUI.
+CharmRun preserves unknown fields on managed Python launch entries. Existing fields such as `justMyCode` or `subProcess` remain in `launch.json` when you edit the config in the GUI. (`envFile` is no longer in this group - it is a managed field, editable from the Env File box in the configuration editor.)
 
 ## Validation Rules
 

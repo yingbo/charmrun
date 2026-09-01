@@ -231,6 +231,13 @@ export class Runner implements vscode.Disposable {
       debugConfig.module = config.module;
     }
 
+    if (config.envFile && config.envFile.trim()) {
+      const envFilePath = resolver.resolve(config.envFile.trim());
+      debugConfig.envFile = path.isAbsolute(envFilePath)
+        ? envFilePath
+        : path.join(folder.uri.fsPath, envFilePath);
+    }
+
     return debugConfig;
   }
 

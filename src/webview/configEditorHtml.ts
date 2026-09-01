@@ -276,6 +276,16 @@ export function getEditorHtml(
   </div>
 
   <div class="form-group">
+    <label for="envFile">Env File</label>
+    <div class="form-row">
+      <div class="field">
+        <input type="text" id="envFile" placeholder="e.g. \${workspaceFolder}/.env" />
+      </div>
+      <button class="browse-btn" id="browse-env-file">Browse</button>
+    </div>
+  </div>
+
+  <div class="form-group">
     <label for="terminal">Terminal</label>
     <select id="terminal">
       <option value="integrated">Integrated Terminal</option>
@@ -335,6 +345,7 @@ export function getEditorHtml(
       const terminalEl = document.getElementById('terminal');
       const runModeEl = document.getElementById('runMode');
       const envContainer = document.getElementById('env-container');
+      const envFileEl = document.getElementById('envFile');
       const preRunContainer = document.getElementById('prerun-container');
       const preRunTypeEl = document.getElementById('prerun-type');
 
@@ -345,6 +356,7 @@ export function getEditorHtml(
         moduleEl.value = config.module || '';
         argsEl.value = (config.args || []).join(' ');
         cwdEl.value = config.cwd || '\${workspaceFolder}';
+        envFileEl.value = config.envFile || '';
         terminalEl.value = config.terminal || 'integrated';
         runModeEl.value = config.runMode || 'run';
 
@@ -614,6 +626,7 @@ export function getEditorHtml(
           args: args,
           cwd: cwdEl.value || '\${workspaceFolder}',
           env: env,
+          envFile: envFileEl.value.trim(),
           terminal: terminalEl.value,
           runMode: runModeEl.value,
           preRun: preRunSteps.map(step => ({
@@ -702,6 +715,10 @@ export function getEditorHtml(
         vscode.postMessage({ command: 'browseCwd' });
       });
 
+      document.getElementById('browse-env-file').addEventListener('click', () => {
+        vscode.postMessage({ command: 'browseEnvFile' });
+      });
+
       // Handle messages from extension
       window.addEventListener('message', event => {
         const message = event.data;
@@ -710,6 +727,7 @@ export function getEditorHtml(
             if (message.field === 'script') scriptEl.value = message.path;
             else if (message.field === 'interpreter') interpreterPathEl.value = message.path;
             else if (message.field === 'cwd') cwdEl.value = message.path;
+            else if (message.field === 'envFile') envFileEl.value = message.path;
             break;
         }
       });
