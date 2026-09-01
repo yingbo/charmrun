@@ -2,8 +2,12 @@
   "name": "charmrun",
   "displayName": "CharmRun - Python Run Configs",
   "description": "PyCharm-style Python run configuration manager with GUI editor",
-  "version": "1.0.1",
+  "version": "1.2.0",
   "publisher": "yingbo",
+  "author": {
+    "name": "yingbo",
+    "email": "yingbo@miao.fm"
+  },
   "icon": "media/extension-icon.png",
   "license": "MIT",
   "repository": {
@@ -22,7 +26,6 @@
     "Programming Languages"
   ],
   "activationEvents": [
-    "*",
     "onView:charmrun.configurationsView",
     "onCommand:charmrun.openConfigurationFlow",
     "onCommand:charmrun.createConfiguration",
@@ -32,7 +35,8 @@
     "onCommand:charmrun.runConfiguration",
     "onCommand:charmrun.debugConfiguration",
     "onLanguage:python",
-    "workspaceContains:**/*.py"
+    "workspaceContains:**/*.py",
+    "workspaceContains:.vscode/launch.json"
   ],
   "main": "./dist/extension.js",
   "contributes": {
@@ -208,13 +212,18 @@
     "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
     "vscode:prepublish": "npm run package",
     "package": "npm run check-types && node esbuild.js --production",
+    "vsix": "vsce package --out charmrun.vsix",
+    "publish:openvsx": "ovsx publish charmrun.vsix",
+    "publish:marketplace": "vsce publish --packagePath charmrun.vsix",
     "lint": "eslint src --ext ts"
   },
   "devDependencies": {
     "@types/node": "^20.0.0",
     "@types/vscode": "^1.85.0",
+    "@vscode/vsce": "^3.9.2",
     "esbuild": "^0.27.4",
     "npm-run-all": "^4.1.5",
+    "ovsx": "^1.1.1",
     "typescript": "^5.4.0"
   },
   "dependencies": {

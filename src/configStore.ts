@@ -2,13 +2,19 @@ import * as vscode from 'vscode';
 import * as path from 'path';
 import * as fs from 'fs';
 import { parse, ParseError } from 'jsonc-parser/lib/esm/main.js';
-import { RunConfiguration, generateId } from './types';
+import {
+  RunConfiguration,
+  clonePreRunSteps,
+  generateId,
+  normalizePreRunSteps,
+} from './types';
 
 const CONFIG_FILENAME = 'launch.json';
 const ACTIVE_CONFIG_KEY = 'charmrun.activeConfigId';
 const CHARMRUN_MANAGED_KEY = 'charmrunManaged';
 const CHARMRUN_ID_KEY = 'charmrunId';
 const CHARMRUN_RUN_MODE_KEY = 'charmrunRunMode';
+const CHARMRUN_PRE_RUN_KEY = 'charmrunPreRun';
 
 type LaunchJsonFile = {
   version: string;
@@ -31,6 +37,7 @@ type LaunchConfiguration = Record<string, unknown> & {
   charmrunManaged?: boolean;
   charmrunId?: string;
   charmrunRunMode?: string;
+  charmrunPreRun?: unknown;
 };
 
 export type AdoptableConfiguration = {
@@ -55,6 +62,7 @@ const KNOWN_DEBUG_KEYS = new Set([
   CHARMRUN_MANAGED_KEY,
   CHARMRUN_ID_KEY,
   CHARMRUN_RUN_MODE_KEY,
+  CHARMRUN_PRE_RUN_KEY,
 ]);
 
 export class ConfigStore implements vscode.Disposable {
@@ -155,6 +163,7 @@ export class ConfigStore implements vscode.Disposable {
       name: `${source.name} (Copy)`,
       args: [...source.args],
       env: { ...source.env },
+      preRun: clonePreRunSteps(source.preRun),
       extra: { ...(source.extra ?? {}) },
     };
     configs.push(copy);
@@ -373,6 +382,7 @@ export class ConfigStore implements vscode.Disposable {
       envFile: typeof entry.envFile === 'string' ? entry.envFile : '',
       terminal: this.fromLaunchConsole(entry.console),
       runMode: this.fromLaunchRunMode(entry),
+      preRun: normalizePreRunSteps(entry[CHARMRUN_PRE_RUN_KEY]),
       extra: this.extractExtraFields(entry),
     };
   }
@@ -405,6 +415,12 @@ export class ConfigStore implements vscode.Disposable {
 
     if (config.envFile && config.envFile.trim()) {
       launchConfig.envFile = config.envFile;
+    }
+
+    if (config.preRun.length > 0) {
+      launchConfig[CHARMRUN_PRE_RUN_KEY] = clonePreRunSteps(config.preRun);
+    } else {
+      delete launchConfig[CHARMRUN_PRE_RUN_KEY];
     }
 
     return launchConfig;

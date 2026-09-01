@@ -35,6 +35,7 @@ src/
 - `args` - string array
 - `cwd` - working directory with variable support
 - `env` - key-value environment variables
+- `envFile` - path to a `.env` file, passed through to `debugpy`'s `envFile`
 - `terminal` - "integrated" | "external" | "internalConsole"
 - `runMode` - "run" | "debug"
 
@@ -78,7 +79,7 @@ Active config ID stored in `workspaceState` (per-user, not committed to VCS).
 
 ### Webview Editor
 - Full HTML form with VS Code theme CSS variables
-- Fields: Name, Run Type, Script/Module, Interpreter, Args, CWD, Env Vars, Terminal, Run Mode
+- Fields: Name, Run Type, Script/Module, Interpreter, Args, CWD, Env Vars, Env File, Terminal, Run Mode
 - Browse buttons for file/folder pickers via `showOpenDialog`
 - Dynamic env variable rows (add/remove)
 - Args parsed with quote-aware splitting
@@ -103,6 +104,43 @@ Active config ID stored in `workspaceState` (per-user, not committed to VCS).
 ## Variable Expansion
 
 Supported: `${workspaceFolder}`, `${workspaceFolderBasename}`, `${file}`, `${fileBasename}`, `${fileBasenameNoExtension}`, `${fileDirname}`, `${fileExtname}`, `${relativeFile}`, `${env:VARNAME}`
+
+## Before Launch Steps (1.1.0)
+
+PyCharm-style pre-run steps attached to each configuration.
+
+- `PreRunStep` in `src/types.ts`: `{ id, type, enabled, configId, command, args, cwd, task }`
+  with `normalizePreRunSteps()` used to sanitize both `launch.json` contents and
+  webview messages.
+- Persisted as `charmrunPreRun` on the managed `launch.json` entry; the key is
+  omitted when a configuration has no steps, so existing files stay unchanged.
+- `src/preRunRunner.ts` runs enabled steps in order inside a cancellable
+  progress notification and logs to the `CharmRun Before Launch` output channel:
+  - `configuration`: delegates back to `Runner`, which launches the referenced
+    config and waits for `onDidTerminateDebugSession` (matched by a
+    `charmrunLaunchToken` marker on the debug config).
+  - `externalTool`: `child_process.spawn` with `shell: true`, arguments quoted
+    by CharmRun; non-zero exit fails the launch.
+  - `task`: `vscode.tasks.fetchTasks()` + `executeTask`, resolved by
+    `onDidEndTaskProcess` exit code.
+- Cycle detection: `Runner.execute` threads a `chain` set of configuration ids
+  through nested launches and refuses to re-enter a configuration already on it.
+- Editor: **Before Launch** section with per-step enable checkbox, type select,
+  reorder (up/down), remove; configuration steps use a dropdown of the other
+  configurations in the same workspace folder, task steps a dropdown of
+  workspace tasks. `ConfigEditorProvider.buildEditorContext()` supplies both.
+
+## Env File (1.2.0)
+
+- `envFile` on every configuration, surfaced as the **Env File** field in the
+  editor with a browse button, and written to `launch.json` as debugpy's
+  standard `envFile` option.
+- `Runner` resolves the value through `VariableResolver` and makes it absolute
+  against the workspace folder before handing it to the debug session.
+- New configurations default to `${workspaceFolder}/.env` when a `.env` file
+  exists in the workspace root (`ConfigEditorProvider.createDefaultConfigForFolder()`).
+- `envFile` is a managed key, so it is no longer round-tripped as an unknown
+  passthrough field.
 
 ## Build
 

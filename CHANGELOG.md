@@ -2,11 +2,51 @@
 
 All notable changes to this project are documented in this file.
 
-## [1.0.1] - 2026-08-30
+## [1.2.0] - 2026-09-01
 
 ### Added
 
-- Env File support for run configurations (`envFile`), passed through to `debugpy`'s `envFile` option. New configurations default to `${workspaceFolder}/.env` when a `.env` file is present in the project root.
+- Env File support for run configurations (`envFile`), passed through to
+  `debugpy`'s `envFile` option. New configurations default to
+  `${workspaceFolder}/.env` when a `.env` file is present in the project root.
+
+## [1.1.1] - 2026-09-01
+
+### Changed
+
+- Removed the `*` activation event. CharmRun now activates only when it is
+  actually needed - a workspace containing Python files or a `.vscode/launch.json`,
+  an open Python file, the CharmRun view, or one of its commands - instead of on
+  every window. This removes CharmRun from the startup path of unrelated
+  workspaces and clears the packaging warning raised by `vsce`.
+
+### Added
+
+- Distribution setup so CharmRun can be installed from Cursor: `npm run vsix`
+  builds a VSIX, and `npm run publish:openvsx` / `npm run publish:marketplace`
+  publish it to Open VSX and the VS Code Marketplace.
+- `Release` GitHub Actions workflow that builds the VSIX on a `v*` tag, attaches
+  it to the GitHub release, and publishes to Open VSX (and the Marketplace when
+  `VSCE_PAT` is configured).
+- `docs/PUBLISHING.md` with registry setup and release steps.
+
+## [1.1.0] - 2026-08-30
+
+### Added
+
+- Before-launch (pre-run) steps on every run configuration, PyCharm-style.
+- Step types: run another CharmRun configuration (picked from a dropdown of
+  configurations in the same workspace folder), run an external tool
+  (command + arguments + working directory), or run a VS Code task.
+- Before Launch section in the configuration editor: add, reorder, enable or
+  disable, and remove steps.
+- Steps run in order before the main launch; a failing, cancelled, or
+  non-zero-exit step aborts the launch.
+- Circular before-launch references are detected and reported instead of
+  recursing.
+- Step output and failures are logged to the `CharmRun Before Launch` output
+  channel; progress is shown in a cancellable notification.
+- Steps are persisted in `launch.json` under `charmrunPreRun`.
 
 ## [0.1.0] - 2026-03-11
 

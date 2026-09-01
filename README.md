@@ -12,6 +12,7 @@ CharmRun lets you create named run/debug profiles (script or module), choose int
 - Script mode (`python script.py`) and module mode (`python -m module_name`)
 - Uses `.vscode/launch.json` as the source of truth
 - Adopt existing Python `debugpy` launch configurations in place
+- Before-launch steps: run another configuration, an external tool, or a VS Code task first
 - Active configuration picker in status bar
 - Sidebar tree with inline Run/Debug actions
 - Run/debug current Python file without creating a config
@@ -24,14 +25,48 @@ CharmRun lets you create named run/debug profiles (script or module), choose int
 - Python installed and available in environment
 - Recommended: VS Code Python extension (CharmRun can fall back to configured/default PATH interpreters)
 
-## Install (Development)
+## Install
+
+### Cursor, Windsurf, VSCodium
+
+These editors resolve extensions from [Open VSX](https://open-vsx.org) rather
+than the VS Code Marketplace. Search for **CharmRun** in the Extensions panel,
+or install from the command line:
+
+```bash
+cursor --install-extension yingbo.charmrun
+```
+
+### VS Code
+
+Search for **CharmRun** in the Extensions panel, or:
+
+```bash
+code --install-extension yingbo.charmrun
+```
+
+### From a VSIX
+
+Every release attaches `charmrun.vsix` to its
+[GitHub release](https://github.com/yingbo/charmrun/releases). Download it and
+install with either editor:
+
+```bash
+cursor --install-extension charmrun.vsix
+code --install-extension charmrun.vsix
+```
+
+In the UI: **Extensions → ... menu → Install from VSIX...**
+
+### From source
 
 ```bash
 npm install
 npm run compile
 ```
 
-Press `F5` in VS Code to launch an Extension Development Host.
+Press `F5` in VS Code to launch an Extension Development Host. To build an
+installable package instead, run `npm run vsix`.
 
 ## Usage
 
@@ -72,6 +107,27 @@ CharmRun only manages entries it created or explicitly adopted. Other `launch.js
 
 See full format: [docs/CONFIG_FORMAT.md](docs/CONFIG_FORMAT.md)
 
+## Before Launch Steps
+
+Each configuration can run a list of steps before it launches, in the order you
+arrange them in the **Before Launch** section of the editor:
+
+- **Run another configuration** - pick any other CharmRun configuration in the
+  same workspace folder from a dropdown. It runs to completion (including its
+  own before-launch steps) before the next step starts.
+- **Run external tool** - a command with arguments and a working directory. A
+  non-zero exit code aborts the launch.
+- **Run task** - a VS Code task, chosen from the tasks available in the
+  workspace. A non-zero task exit code aborts the launch.
+
+Steps can be reordered, disabled without being deleted, and cancelled while they
+run (progress appears as a notification). Output and failures are written to the
+`CharmRun Before Launch` output channel. Circular references between
+configurations are detected and reported instead of looping.
+
+Steps are stored with the configuration in `launch.json` under `charmrunPreRun`,
+so they are shared with the rest of the team.
+
 ## Variable Expansion
 
 Supported placeholders:
@@ -92,6 +148,8 @@ Applied to:
 - `args`
 - `cwd`
 - `env` values
+- `envFile`
+- before-launch external tool `command`, `args`, and `cwd`
 
 ## Interpreter Resolution
 
@@ -108,11 +166,15 @@ If a custom interpreter path/command is provided, CharmRun validates it before l
 - `npm run compile`: Type-check + esbuild bundle
 - `npm run watch`: Type-check + bundling in watch mode
 - `npm run package`: Production bundle for publishing
+- `npm run vsix`: Build an installable `charmrun.vsix`
+- `npm run publish:openvsx`: Publish the VSIX to Open VSX (Cursor)
+- `npm run publish:marketplace`: Publish the VSIX to the VS Code Marketplace
 
 ## Project Docs
 
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
 - [docs/CONFIG_FORMAT.md](docs/CONFIG_FORMAT.md)
+- [docs/PUBLISHING.md](docs/PUBLISHING.md)
 - [CONTRIBUTING.md](CONTRIBUTING.md)
 - [FEATURE_SPEC.md](FEATURE_SPEC.md)
 - [worklog.md](worklog.md)
