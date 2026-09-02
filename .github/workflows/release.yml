@@ -49,4 +49,4 @@ jobs:
         if: >-
           startsWith(github.ref, 'refs/tags/v') ||
           inputs.publish
-        run: npx vsce publish --packagePath charmrun.vsix --pat "$VSCE_PAT"
+        run: npx vsce publish --packagePath charmrun.vsix --skip-duplicate
