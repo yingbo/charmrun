@@ -16,7 +16,10 @@ install the `.vsix` attached to each GitHub release.
 ### VS Code Marketplace
 
 1. Create an Azure DevOps organization and a personal access token scoped to
-   **Marketplace → Manage** (all accessible organizations).
+   **Marketplace → Manage**. Scope it to your own organization, not "all
+   accessible organizations": org-scoped tokens publish fine (verified when
+   1.2.0 shipped), and global ones are retired on 2026-12-01. The VS Code docs
+   still say to use a global token; that guidance is out of date.
 2. Create the `yingbo` publisher at
    <https://marketplace.visualstudio.com/manage>. It must match `publisher` in
    `package.json`.
