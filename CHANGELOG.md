@@ -11,6 +11,11 @@ All notable changes to this project are documented in this file.
   dialog with a textarea; line breaks are replaced with spaces when saved.
   `Ctrl/Cmd+Enter` saves, `Esc` cancels.
 
+### Changed
+
+- `npm run lint` now works: `eslint` and `typescript-eslint` are dev
+  dependencies with a flat config in `eslint.config.mjs`.
+
 ## [1.2.1] - 2026-09-05
 
 ### Added
