@@ -22,6 +22,7 @@ management with a GUI editor. Built with TypeScript and esbuild.
 ## Development
 
 - `npm run compile` to build
+- `npm run lint` to run ESLint (flat config in `eslint.config.mjs`)
 - `npm run watch` for development (auto-rebuild)
 - F5 in VS Code launches Extension Development Host for testing
 - TypeScript strict mode is enabled
