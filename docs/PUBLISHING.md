@@ -1,15 +1,17 @@
 # Publishing CharmRun
 
-CharmRun targets two distribution channels:
+CharmRun targets three distribution channels:
 
 | Channel | Used by | Required secret |
 | --- | --- | --- |
 | [VS Code Marketplace](https://marketplace.visualstudio.com) | VS Code, VS Code Insiders | `VSCE_PAT` |
-| GitHub Releases (`.vsix`) | Manual install anywhere, including Cursor | none |
+| [Open VSX Registry](https://open-vsx.org) | Cursor, Windsurf, VSCodium, Gitpod | `OVSX_PAT` |
+| GitHub Releases (`.vsix`) | Manual install anywhere | none |
 
 Microsoft's marketplace terms restrict it to Microsoft products, so Cursor,
-Windsurf and VSCodium do not resolve extensions from it. Users on those editors
-install the `.vsix` attached to each GitHub release.
+Windsurf and VSCodium do not resolve extensions from it. Those editors instead
+resolve extensions from Open VSX, or fall back to a manually installed `.vsix`
+attached to each GitHub release.
 
 ## One-time setup
 
@@ -32,6 +34,29 @@ install the `.vsix` attached to each GitHub release.
 Marketplace tokens expire (one year maximum). When a release fails to publish
 with a 401, regenerate the token in Azure DevOps and re-run `gh secret set`.
 
+### Open VSX Registry
+
+1. Log in to <https://open-vsx.org> with GitHub.
+2. Under your profile → Settings, sign the Eclipse Publisher Agreement (this
+   links your Open VSX account to your eclipse.org account).
+3. Under Settings → Access Tokens, generate a personal access token.
+4. Claim the `yingbo` namespace (must match `publisher` in `package.json`,
+   one-time):
+
+   ```bash
+   npx ovsx create-namespace yingbo -p <open-vsx-token>
+   ```
+
+5. Store the token as the repository secret `OVSX_PAT`:
+
+   ```bash
+   gh secret set OVSX_PAT -R yingbo/charmrun
+   ```
+
+Open VSX tokens don't expire on a fixed schedule, but can be revoked from the
+same Access Tokens page; regenerate and re-run `gh secret set` if a release
+fails to publish with a 401/403.
+
 ## Releasing
 
 1. Bump `version` in `package.json` and add a `CHANGELOG.md` entry.
@@ -43,9 +68,9 @@ with a 401, regenerate the token in Azure DevOps and re-run `gh secret set`.
    ```
 
 The `Release` workflow (`.github/workflows/release.yml`) then builds the VSIX,
-attaches it to a GitHub release, and publishes to the Marketplace. It can also
-be run manually from the Actions tab — leave the `publish` input unchecked to
-build the VSIX without publishing.
+attaches it to a GitHub release, and publishes to the Marketplace and Open VSX.
+It can also be run manually from the Actions tab — leave the `publish` input
+unchecked to build the VSIX without publishing.
 
 The tag must match the `version` in `package.json`; nothing enforces this, and a
 mismatch ships a VSIX whose version differs from the release name.
@@ -56,6 +81,7 @@ mismatch ships a VSIX whose version differs from the release name.
 npm ci
 npm run vsix                 # -> charmrun.vsix
 npx vsce publish --packagePath charmrun.vsix --pat <marketplace-token>
+npx ovsx publish charmrun.vsix -p <open-vsx-token>
 ```
 
 `npm run vsix` runs `check-types` and a production esbuild bundle through the
@@ -75,4 +101,6 @@ cursor --install-extension charmrun.vsix
 
 Once published, the extension appears at
 `https://marketplace.visualstudio.com/items?itemName=yingbo.charmrun` and is
-searchable as "CharmRun" in the VS Code Extensions panel.
+searchable as "CharmRun" in the VS Code Extensions panel, and at
+`https://open-vsx.org/extension/yingbo/charmrun`, searchable in Cursor's
+Extensions panel.
