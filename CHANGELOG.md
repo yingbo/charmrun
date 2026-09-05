@@ -2,6 +2,15 @@
 
 All notable changes to this project are documented in this file.
 
+## [Unreleased]
+
+### Added
+
+- PyCharm-style multi-line editor for argument fields. An **Edit...** button next
+  to the **Arguments** field (and each before-launch step's arguments) opens a
+  dialog with a textarea; line breaks are replaced with spaces when saved.
+  `Ctrl/Cmd+Enter` saves, `Esc` cancels.
+
 ## [1.2.1] - 2026-09-05
 
 ### Added
