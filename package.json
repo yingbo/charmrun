@@ -2,7 +2,7 @@
   "name": "charmrun",
   "displayName": "CharmRun - Python Run Configs",
   "description": "PyCharm-style Python run configuration manager with GUI editor",
-  "version": "1.2.0",
+  "version": "1.2.1",
   "publisher": "yingbo",
   "author": {
     "name": "yingbo",
@@ -214,6 +214,7 @@
     "package": "npm run check-types && node esbuild.js --production",
     "vsix": "vsce package --out charmrun.vsix",
     "publish:marketplace": "vsce publish --packagePath charmrun.vsix",
+    "publish:openvsx": "ovsx publish charmrun.vsix",
     "lint": "eslint src --ext ts"
   },
   "devDependencies": {
@@ -222,6 +223,7 @@
     "@vscode/vsce": "^3.9.2",
     "esbuild": "^0.27.4",
     "npm-run-all": "^4.1.5",
+    "ovsx": "^1.1.1",
     "typescript": "^5.4.0"
   },
   "dependencies": {
