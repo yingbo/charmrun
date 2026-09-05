@@ -203,6 +203,70 @@ export function getEditorHtml(
       margin-bottom: 8px;
       color: var(--vscode-foreground);
     }
+    .args-row {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    .args-row input {
+      flex: 1;
+    }
+    .expand-btn {
+      padding: 6px 10px;
+      background: var(--vscode-button-secondaryBackground);
+      color: var(--vscode-button-secondaryForeground);
+      border: none;
+      border-radius: 2px;
+      cursor: pointer;
+      font-size: var(--vscode-font-size);
+      white-space: nowrap;
+    }
+    .expand-btn:hover {
+      background: var(--vscode-button-secondaryHoverBackground);
+    }
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.45);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+    }
+    .modal-overlay.hidden {
+      display: none;
+    }
+    .modal {
+      width: min(640px, calc(100vw - 48px));
+      background: var(--vscode-editorWidget-background, var(--vscode-editor-background, #ffffff));
+      color: var(--vscode-editorWidget-foreground, var(--vscode-foreground, #333333));
+      border: 1px solid var(--vscode-editorWidget-border, var(--vscode-panel-border, rgba(128,128,128,0.35)));
+      border-radius: 4px;
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
+      padding: 16px;
+      box-sizing: border-box;
+    }
+    .modal h3 {
+      margin: 0 0 8px 0;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    .modal-hint {
+      margin: 0 0 8px 0;
+      font-size: 12px;
+      color: var(--vscode-descriptionForeground);
+    }
+    .modal textarea {
+      min-height: 180px;
+      resize: vertical;
+      font-family: var(--vscode-editor-font-family, monospace);
+      font-size: var(--vscode-editor-font-size, var(--vscode-font-size));
+      white-space: pre-wrap;
+    }
+    .modal .button-bar {
+      margin-top: 12px;
+      padding-top: 12px;
+    }
   </style>
 </head>
 <body>
@@ -256,7 +320,10 @@ export function getEditorHtml(
 
   <div class="form-group">
     <label for="args">Arguments</label>
-    <input type="text" id="args" placeholder="e.g. --port 8000 --reload" />
+    <div class="args-row">
+      <input type="text" id="args" placeholder="e.g. --port 8000 --reload" />
+      <button class="expand-btn" id="expand-args" title="Open multi-line editor">Edit...</button>
+    </div>
   </div>
 
   <div class="form-group">
@@ -320,6 +387,18 @@ export function getEditorHtml(
   <div class="button-bar">
     <button class="secondary-btn" id="cancel-btn">Cancel</button>
     <button class="primary-btn" id="save-btn">Save</button>
+  </div>
+
+  <div class="modal-overlay hidden" id="multiline-overlay">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="multiline-title">
+      <h3 id="multiline-title">Arguments</h3>
+      <p class="modal-hint">One argument per line is fine. Line breaks are replaced with spaces when you click OK.</p>
+      <textarea id="multiline-textarea" spellcheck="false"></textarea>
+      <div class="button-bar">
+        <button class="secondary-btn" id="multiline-cancel">Cancel</button>
+        <button class="primary-btn" id="multiline-ok">OK</button>
+      </div>
+    </div>
   </div>
 
   <script nonce="${nonce}">
@@ -544,7 +623,7 @@ export function getEditorHtml(
           step.command = value;
         }));
         container.appendChild(makeLabel('Arguments'));
-        container.appendChild(makeTextInput(step.argsText, 'e.g. run build', value => {
+        container.appendChild(makeArgsInput(step.argsText, 'e.g. run build', value => {
           step.argsText = value;
         }));
         container.appendChild(makeLabel('Working Directory'));
@@ -584,6 +663,76 @@ export function getEditorHtml(
         input.addEventListener('input', () => onChange(input.value));
         return input;
       }
+
+      function makeArgsInput(value, placeholder, onChange) {
+        const row = document.createElement('div');
+        row.className = 'args-row';
+        const input = makeTextInput(value, placeholder, onChange);
+        const button = document.createElement('button');
+        button.className = 'expand-btn';
+        button.textContent = 'Edit...';
+        button.title = 'Open multi-line editor';
+        button.addEventListener('click', () => openMultilineEditor(input));
+        row.appendChild(input);
+        row.appendChild(button);
+        return row;
+      }
+
+      // Multi-line editor for single-line argument fields (PyCharm-style).
+      const multilineOverlay = document.getElementById('multiline-overlay');
+      const multilineTextarea = document.getElementById('multiline-textarea');
+      let multilineTarget = null;
+
+      function openMultilineEditor(inputEl) {
+        multilineTarget = inputEl;
+        multilineTextarea.value = inputEl.value;
+        multilineOverlay.classList.remove('hidden');
+        multilineTextarea.focus();
+        multilineTextarea.setSelectionRange(multilineTextarea.value.length, multilineTextarea.value.length);
+      }
+
+      function closeMultilineEditor() {
+        multilineOverlay.classList.add('hidden');
+        const target = multilineTarget;
+        multilineTarget = null;
+        if (target) {
+          target.focus();
+        }
+      }
+
+      function collapseLines(text) {
+        return text
+          .split(/\\r?\\n/)
+          .map(line => line.trim())
+          .filter(line => line.length > 0)
+          .join(' ');
+      }
+
+      function commitMultilineEditor() {
+        if (multilineTarget) {
+          multilineTarget.value = collapseLines(multilineTextarea.value);
+          multilineTarget.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+        closeMultilineEditor();
+      }
+
+      document.getElementById('multiline-ok').addEventListener('click', commitMultilineEditor);
+      document.getElementById('multiline-cancel').addEventListener('click', closeMultilineEditor);
+      multilineOverlay.addEventListener('mousedown', event => {
+        if (event.target === multilineOverlay) {
+          closeMultilineEditor();
+        }
+      });
+      multilineTextarea.addEventListener('keydown', event => {
+        if (event.key === 'Escape') {
+          event.preventDefault();
+          closeMultilineEditor();
+        } else if (event.key === 'Enter' && (event.ctrlKey || event.metaKey)) {
+          event.preventDefault();
+          commitMultilineEditor();
+        }
+      });
+      document.getElementById('expand-args').addEventListener('click', () => openMultilineEditor(argsEl));
 
       function makeIconButton(text, title, disabled, onClick) {
         const button = document.createElement('button');
