@@ -19,6 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     env:
       VSCE_PAT: ${{ secrets.VSCE_PAT }}
+      OVSX_PAT: ${{ secrets.OVSX_PAT }}
     steps:
       - uses: actions/checkout@v7
 
@@ -50,3 +51,9 @@ jobs:
           startsWith(github.ref, 'refs/tags/v') ||
           inputs.publish
         run: npx vsce publish --packagePath charmrun.vsix --skip-duplicate
+
+      - name: Publish to Open VSX
+        if: >-
+          startsWith(github.ref, 'refs/tags/v') ||
+          inputs.publish
+        run: npx ovsx publish charmrun.vsix --skip-duplicate
