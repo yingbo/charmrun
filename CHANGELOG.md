@@ -2,6 +2,16 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.2.1] - 2026-09-05
+
+### Added
+
+- Publishing to the [Open VSX Registry](https://open-vsx.org), so Cursor,
+  Windsurf, and VSCodium can install and update CharmRun from their built-in
+  Extensions panel instead of a manually installed `.vsix`.
+- `npm run publish:openvsx` and an Open VSX publish step in the `Release`
+  workflow, gated on the `OVSX_PAT` secret.
+
 ## [1.2.0] - 2026-09-01
 
 ### Added
