@@ -27,33 +27,47 @@ CharmRun lets you create named run/debug profiles (script or module), choose int
 
 ## Install
 
-### Cursor, Windsurf, VSCodium
+CharmRun is published to both extension registries:
 
-These editors do not read the VS Code Marketplace, so CharmRun is not
-searchable in their Extensions panels. Install the `.vsix` from the
-[latest release](https://github.com/yingbo/charmrun/releases/latest):
+| Registry | Editors that use it | Listing |
+| --- | --- | --- |
+| VS Code Marketplace | VS Code, VS Code Insiders | [marketplace.visualstudio.com/items?itemName=yingbo.charmrun](https://marketplace.visualstudio.com/items?itemName=yingbo.charmrun) |
+| Open VSX Registry | Cursor, Windsurf, VSCodium, Gitpod | [open-vsx.org/extension/yingbo/charmrun](https://open-vsx.org/extension/yingbo/charmrun) |
+
+Microsoft's marketplace terms restrict it to Microsoft products, so Cursor,
+Windsurf and VSCodium do not resolve extensions from it — they read Open VSX
+instead.
+
+### Searching from the Extensions panel
+
+In any of these editors:
+
+1. Open the Extensions view (`Ctrl+Shift+X`, or `Cmd+Shift+X` on macOS).
+2. Type **CharmRun** in the search box — or `yingbo.charmrun` to match the
+   exact extension ID and skip similarly named results.
+3. Pick the entry published by **yingbo** and click **Install**.
+
+VS Code searches the VS Code Marketplace; Cursor, Windsurf and VSCodium search
+Open VSX. Both registries carry the same versions.
+
+### From the command line
 
 ```bash
-cursor --install-extension charmrun.vsix
-```
-
-### VS Code
-
-Search for **CharmRun** in the Extensions panel, or:
-
-```bash
-code --install-extension yingbo.charmrun
+code --install-extension yingbo.charmrun      # VS Code
+cursor --install-extension yingbo.charmrun    # Cursor
+windsurf --install-extension yingbo.charmrun  # Windsurf
+codium --install-extension yingbo.charmrun    # VSCodium
 ```
 
 ### From a VSIX
 
 Every release attaches `charmrun.vsix` to its
-[GitHub release](https://github.com/yingbo/charmrun/releases). Download it and
-install with either editor:
+[GitHub release](https://github.com/yingbo/charmrun/releases/latest). Download
+it and install with:
 
 ```bash
-cursor --install-extension charmrun.vsix
 code --install-extension charmrun.vsix
+cursor --install-extension charmrun.vsix
 ```
 
 In the UI: **Extensions → ... menu → Install from VSIX...**
