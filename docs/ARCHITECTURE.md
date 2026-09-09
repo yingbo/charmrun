@@ -68,6 +68,7 @@ This split allows teams to share configuration definitions while each developer 
 
 - Activity Bar view container: `charmrun-explorer`
 - Tree view: `charmrun.configurationsView`
+  - inline run/debug actions, context menu, double-click to edit
 - Status bar:
   - selector (`$(gear)` or create prompt)
   - run (`$(play)`)
@@ -75,6 +76,7 @@ This split allows teams to share configuration definitions while each developer 
 - Webview editor panel:
   - create/edit form for all config fields
   - browse actions for script/interpreter/cwd
+  - Apply (writes and keeps the panel open), Save & Close, Cancel
 
 ## Extension Packaging
 

@@ -1,6 +1,6 @@
 # CharmRun vs. PyCharm Run Configurations
 
-CharmRun brings PyCharm-style named run/debug profiles to VS Code, backed by `.vscode/launch.json`. Based on the current feature set (`README.md`, `FEATURE_SPEC.md`, `src/`), it covers the core loop well: named configs, script/module modes, interpreter resolution, variable expansion, a sidebar tree, and status bar run/debug. PyCharm's run-configuration system goes further in several ways. Below are the five most important gaps.
+CharmRun brings PyCharm-style named run/debug profiles to VS Code, backed by `.vscode/launch.json`. Based on the current feature set (`README.md`, `FEATURE_SPEC.md`, `src/`), it covers the core loop well: named configs, script/module modes, interpreter resolution, variable expansion, a sidebar tree, and status bar run/debug. PyCharm's run-configuration system goes further in several ways. Below are the five most important gaps identified, two of which CharmRun has since closed.
 
 ## 1. Compound / parallel run configurations
 
@@ -8,7 +8,7 @@ PyCharm lets you define a **Compound** configuration that bundles several run co
 
 ## 2. "Before launch" tasks
 
-PyCharm configurations support a **Before Launch** step list: run another run configuration first, execute an external tool, run a build/compile step, activate a specific environment, or run a script — all automatically before the main process starts. CharmRun has no equivalent hook; there's no way to say "install dependencies" or "run migrations" before a configuration executes.
+PyCharm configurations support a **Before Launch** step list: run another run configuration first, execute an external tool, run a build/compile step, activate a specific environment, or run a script — all automatically before the main process starts. CharmRun now supports this too: every configuration has a **Before Launch** section, persisted as `charmrunPreRun` in `launch.json`, holding an ordered list of steps. A step can run another CharmRun configuration, an external tool (command, arguments, working directory), or a VS Code task; steps can be reordered, enabled, or disabled individually. They execute in order before the launch, and a failing, cancelled, or non-zero-exit step aborts it. Circular references between configurations are detected and reported rather than recursing, and step output is logged to the `CharmRun Before Launch` output channel. PyCharm's build/compile and "activate environment" step types have no direct equivalent, since they map onto JetBrains build-system concepts VS Code does not share.
 
 ## 3. Specialized/templated run configurations
 
