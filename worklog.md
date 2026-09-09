@@ -51,7 +51,7 @@ Active config ID stored in `workspaceState` (per-user, not committed to VCS).
 6. **Inline webview script** with CSP nonce for security
 7. **@vscode-elements** not used in final implementation - vanilla HTML form elements with VS Code CSS variables provide sufficient native look
 
-## Commands Registered (12 total)
+## Commands Registered (15 total)
 
 | Command | Description | Source |
 |---------|-------------|--------|
@@ -67,6 +67,9 @@ Active config ID stored in `workspaceState` (per-user, not committed to VCS).
 | `charmrun.refreshConfigurations` | Refresh tree view | Tree title |
 | `charmrun.runConfigFromTree` | Run specific config | Tree inline button |
 | `charmrun.debugConfigFromTree` | Debug specific config | Tree inline button |
+| `charmrun.openConfigurationFlow` | Create or adopt, via QuickPick | Tree title / palette |
+| `charmrun.adoptLaunchConfiguration` | Adopt an existing launch.json entry | Palette |
+| `charmrun.treeItemActivated` | Open editor on double-click | Tree item click |
 
 ## UI Components
 
@@ -75,6 +78,7 @@ Active config ID stored in `workspaceState` (per-user, not committed to VCS).
 - Flat list of configs across workspace folders
 - Inline run/debug buttons per item
 - Context menu: Edit, Duplicate, Delete
+- Double-click an item to open it in the editor
 - Welcome view when no configs exist
 
 ### Webview Editor
@@ -83,7 +87,9 @@ Active config ID stored in `workspaceState` (per-user, not committed to VCS).
 - Browse buttons for file/folder pickers via `showOpenDialog`
 - Dynamic env variable rows (add/remove)
 - Args parsed with quote-aware splitting
-- Message passing protocol: save/cancel/browse* (webview→ext), setFilePath (ext→webview)
+- Buttons: Cancel, Apply (save without closing), Save & Close
+- Message passing protocol: save/apply/cancel/browse* (webview→ext),
+  setFilePath/applied (ext→webview)
 
 ### Status Bar (Left-aligned)
 - Config selector: `$(gear) ConfigName` or `$(add) Create Run Config`
@@ -141,6 +147,23 @@ PyCharm-style pre-run steps attached to each configuration.
   exists in the workspace root (`ConfigEditorProvider.createDefaultConfigForFolder()`).
 - `envFile` is a managed key, so it is no longer round-tripped as an unknown
   passthrough field.
+
+## Editor Apply and Double-Click to Edit (1.4.0)
+
+- **Apply** writes the form to `launch.json` and leaves the panel open;
+  **Save & Close** (formerly **Save**) writes and closes. Both go through
+  `ConfigEditorProvider.persist()`.
+- `persist()` clears the `isNew` flag after the first write, so repeated Apply
+  clicks on a new configuration add it once and update it in place afterwards
+  instead of appending duplicates. It also retitles the panel from
+  "New Run Configuration" to the configuration's name.
+- `ConfigTreeItem` carries a `command` pointing at
+  `charmrun.treeItemActivated`, which fires on every click. VS Code exposes no
+  double-click event for tree views, so the handler measures the gap between
+  two clicks on the same item (500 ms window).
+- When `workbench.list.openMode` is `doubleClick`, VS Code already withholds
+  the command until the second click, so the handler opens the editor on the
+  first invocation rather than requiring two double-clicks.
 
 ## Build
 

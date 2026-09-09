@@ -260,6 +260,8 @@ Edit
 Delete
 Duplicate
 
+Double-clicking a configuration must open it in the editor.
+
 ---
 
 # 7. Configuration Editor
@@ -281,7 +283,8 @@ Run mode
 
 Users must be able to:
 
-Save
+Apply (save without closing the editor)
+Save & Close
 Cancel
 
 ---
