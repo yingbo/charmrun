@@ -8,6 +8,7 @@ node_modules/**
 .gitignore
 tsconfig.json
 esbuild.js
+scripts/**
 dev.sh
 package-lock.json
 *.vsix
