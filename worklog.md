@@ -10,7 +10,7 @@ VS Code extension providing PyCharm-style Python run configuration management wi
 src/
 ├── extension.ts              # Entry point - activate/deactivate
 ├── types.ts                  # RunConfiguration interface, enums, helpers
-├── configStore.ts            # CRUD for .vscode/python-run-configs.json
+├── configStore.ts            # CRUD for CharmRun entries in .vscode/launch.json
 ├── variableResolver.ts       # ${workspaceFolder}, ${file}, ${env:VAR} expansion
 ├── interpreterResolver.ts    # Python interpreter resolution
 ├── runner.ts                 # Build DebugConfiguration, launch via debugpy
@@ -26,7 +26,10 @@ src/
 
 ## Data Model
 
-`RunConfiguration` stored in `.vscode/python-run-configs.json`:
+`RunConfiguration` is the in-memory model. It is persisted as a `debugpy`
+entry in `.vscode/launch.json`, tagged `charmrunManaged: true`, with `id`,
+`runMode` and `preRun` carried in the `charmrunId`, `charmrunRunMode` and
+`charmrunPreRun` keys. Fields:
 - `id` (UUID) - stable reference surviving renames
 - `name` - user-friendly label
 - `runType` - "script" | "module"
