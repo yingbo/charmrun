@@ -88,13 +88,16 @@ installable package instead, run `npm run vsix`.
 2. In the Activity Bar, open **CharmRun**.
 3. Click **Add Configuration**.
 4. Choose whether to create a new CharmRun-managed config or adopt an existing Python `launch.json` entry.
-5. Fill the form and save.
+5. Fill the form, then **Save & Close** to store it and close the editor, or
+   **Apply** to store it and keep editing.
 6. Select the active configuration (status bar or command palette).
 7. Run or debug using:
    - status bar buttons (`play` / `bug`)
    - tree inline actions
    - command palette commands
-8. If you want to skip the combined flow, use `CharmRun: Create Configuration` to create directly or `CharmRun: Adopt launch.json Configuration` to adopt directly.
+8. To change a configuration later, double-click it in the CharmRun sidebar, or
+   use **Edit Configuration** from its right-click menu.
+9. If you want to skip the combined flow, use `CharmRun: Create Configuration` to create directly or `CharmRun: Adopt launch.json Configuration` to adopt directly.
 
 ## Commands
 

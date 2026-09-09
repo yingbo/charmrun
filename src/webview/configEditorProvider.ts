@@ -105,22 +105,46 @@ export class ConfigEditorProvider implements vscode.Disposable {
     return { availableConfigs, availableTasks };
   }
 
+  /**
+   * Writes the edited configuration to the store, without closing the panel.
+   * The first successful write of a new configuration adds it; every later
+   * write updates it in place, so repeated Apply clicks do not create
+   * duplicates.
+   *
+   * @returns true when the configuration was written.
+   */
+  private persist(config: RunConfiguration): boolean {
+    if (!this.currentFolder) {
+      return false;
+    }
+    config.preRun = normalizePreRunSteps(config.preRun).filter(
+      (step) => step.configId !== config.id
+    );
+    if (this.isNew) {
+      this.configStore.addConfiguration(this.currentFolder, config);
+      this.isNew = false;
+    } else {
+      this.configStore.updateConfiguration(this.currentFolder, config);
+    }
+    if (this.panel) {
+      this.panel.title = `Edit: ${config.name}`;
+    }
+    return true;
+  }
+
   private async handleMessage(message: { command: string; [key: string]: unknown }): Promise<void> {
     switch (message.command) {
       case 'save': {
-        const config = message.config as RunConfiguration;
-        if (!this.currentFolder) {
-          return;
+        if (this.persist(message.config as RunConfiguration)) {
+          this.panel?.dispose();
         }
-        config.preRun = normalizePreRunSteps(config.preRun).filter(
-          (step) => step.configId !== config.id
-        );
-        if (this.isNew) {
-          this.configStore.addConfiguration(this.currentFolder, config);
-        } else {
-          this.configStore.updateConfiguration(this.currentFolder, config);
+        break;
+      }
+
+      case 'apply': {
+        if (this.persist(message.config as RunConfiguration)) {
+          this.panel?.webview.postMessage({ command: 'applied' });
         }
-        this.panel?.dispose();
         break;
       }
 

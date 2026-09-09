@@ -318,6 +318,40 @@ export function registerCommands(
     })
   );
 
+  // Tree item click. VS Code has no double-click event for tree views, so the
+  // item's command fires on every click and the gap between two clicks on the
+  // same item is measured here. When the user has set
+  // workbench.list.openMode to doubleClick, VS Code already withholds the
+  // command until the second click, so the first one opens the editor.
+  let lastActivation: { id: string; at: number } | undefined;
+  const DOUBLE_CLICK_MS = 500;
+
+  context.subscriptions.push(
+    vscode.commands.registerCommand(
+      'charmrun.treeItemActivated',
+      async (item: ConfigTreeItem) => {
+        const openMode = vscode.workspace
+          .getConfiguration('workbench.list')
+          .get<string>('openMode');
+        const now = Date.now();
+        const isSecondClick =
+          lastActivation?.id === item.config.id &&
+          now - lastActivation.at < DOUBLE_CLICK_MS;
+
+        if (openMode !== 'doubleClick' && !isSecondClick) {
+          lastActivation = { id: item.config.id, at: now };
+          return;
+        }
+
+        lastActivation = undefined;
+        const folder = findFolderByUri(item.folderUri);
+        if (folder) {
+          await editorProvider.open(folder, item.config);
+        }
+      }
+    )
+  );
+
   // Run from tree (inline button)
   context.subscriptions.push(
     vscode.commands.registerCommand(

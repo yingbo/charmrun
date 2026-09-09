@@ -145,6 +145,17 @@ export function getEditorHtml(
     .secondary-btn:hover {
       background: var(--vscode-button-secondaryHoverBackground);
     }
+    .apply-status {
+      margin-right: auto;
+      align-self: center;
+      font-size: var(--vscode-font-size);
+      color: var(--vscode-descriptionForeground);
+      opacity: 0;
+      transition: opacity 150ms ease-in;
+    }
+    .apply-status.visible {
+      opacity: 1;
+    }
     .hidden {
       display: none;
     }
@@ -385,8 +396,10 @@ export function getEditorHtml(
   </div>
 
   <div class="button-bar">
+    <span class="apply-status" id="apply-status" role="status" aria-live="polite"></span>
     <button class="secondary-btn" id="cancel-btn">Cancel</button>
-    <button class="primary-btn" id="save-btn">Save</button>
+    <button class="secondary-btn" id="apply-btn">Apply</button>
+    <button class="primary-btn" id="save-btn">Save &amp; Close</button>
   </div>
 
   <div class="modal-overlay hidden" id="multiline-overlay">
@@ -838,14 +851,44 @@ export function getEditorHtml(
         renderPreRun();
       });
 
-      document.getElementById('save-btn').addEventListener('click', () => {
+      const applyStatusEl = document.getElementById('apply-status');
+      let applyStatusTimer;
+
+      function showApplyStatus(text) {
+        applyStatusEl.textContent = text;
+        applyStatusEl.classList.add('visible');
+        clearTimeout(applyStatusTimer);
+        applyStatusTimer = setTimeout(() => {
+          applyStatusEl.classList.remove('visible');
+        }, 2000);
+      }
+
+      /**
+       * Returns the form contents, or null when a required field is missing.
+       * Invalid fields are highlighted and focused as a side effect.
+       */
+      function collectValidatedFormData() {
         const config = collectFormData();
         if (!config.name) {
           nameEl.style.borderColor = 'var(--vscode-inputValidation-errorBorder)';
           nameEl.focus();
-          return;
+          return null;
         }
-        vscode.postMessage({ command: 'save', config: config });
+        return config;
+      }
+
+      document.getElementById('save-btn').addEventListener('click', () => {
+        const config = collectValidatedFormData();
+        if (config) {
+          vscode.postMessage({ command: 'save', config: config });
+        }
+      });
+
+      document.getElementById('apply-btn').addEventListener('click', () => {
+        const config = collectValidatedFormData();
+        if (config) {
+          vscode.postMessage({ command: 'apply', config: config });
+        }
       });
 
       document.getElementById('cancel-btn').addEventListener('click', () => {
@@ -877,6 +920,9 @@ export function getEditorHtml(
             else if (message.field === 'interpreter') interpreterPathEl.value = message.path;
             else if (message.field === 'cwd') cwdEl.value = message.path;
             else if (message.field === 'envFile') envFileEl.value = message.path;
+            break;
+          case 'applied':
+            showApplyStatus('Changes applied');
             break;
         }
       });
