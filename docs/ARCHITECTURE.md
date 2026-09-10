@@ -77,6 +77,7 @@ This split allows teams to share configuration definitions while each developer 
   - create/edit form for all config fields
   - browse actions for script/interpreter/cwd
   - Apply (writes and keeps the panel open), Save & Close, Cancel
+  - confirms before Cancel, or opening another configuration, discards edits
 
 ## Extension Packaging
 

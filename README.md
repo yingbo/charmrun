@@ -89,7 +89,8 @@ installable package instead, run `npm run vsix`.
 3. Click **Add Configuration**.
 4. Choose whether to create a new CharmRun-managed config or adopt an existing Python `launch.json` entry.
 5. Fill the form, then **Save & Close** to store it and close the editor, or
-   **Apply** to store it and keep editing.
+   **Apply** to store it and keep editing. Cancelling, or opening a different
+   configuration, asks first if the form has unsaved changes.
 6. Select the active configuration (status bar or command palette).
 7. Run or debug using:
    - status bar buttons (`play` / `bug`)
