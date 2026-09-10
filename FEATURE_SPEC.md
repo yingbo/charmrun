@@ -297,6 +297,8 @@ Apply (save without closing the editor)
 Save & Close
 Cancel
 
+Discarding unsaved changes must be confirmed first.
+
 ---
 
 # 8. Running a Configuration

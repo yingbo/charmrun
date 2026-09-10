@@ -877,6 +877,38 @@ export function getEditorHtml(
         return config;
       }
 
+      // Unsaved-change tracking. The extension cannot read the form, so the
+      // webview tells it whether the form still matches the last saved state.
+      // The extension uses that to confirm before anything discards edits.
+      let savedSnapshot = '';
+      let reportedDirty = false;
+
+      function isDirty() {
+        return JSON.stringify(collectFormData()) !== savedSnapshot;
+      }
+
+      /** Treats the current form as the saved state (on load, and after Apply). */
+      function markSaved() {
+        savedSnapshot = JSON.stringify(collectFormData());
+        reportedDirty = false;
+        vscode.postMessage({ command: 'dirtyState', dirty: false });
+      }
+
+      function updateDirty() {
+        const dirty = isDirty();
+        if (dirty !== reportedDirty) {
+          reportedDirty = dirty;
+          vscode.postMessage({ command: 'dirtyState', dirty: dirty });
+        }
+      }
+
+      // 'input' and 'change' bubble from every field, including rows added
+      // after load. Buttons (add/remove/reorder a row or step) mutate state in
+      // their own handlers, so re-check once those have run.
+      document.addEventListener('input', updateDirty);
+      document.addEventListener('change', updateDirty);
+      document.addEventListener('click', () => setTimeout(updateDirty, 0));
+
       document.getElementById('save-btn').addEventListener('click', () => {
         const config = collectValidatedFormData();
         if (config) {
@@ -892,7 +924,7 @@ export function getEditorHtml(
       });
 
       document.getElementById('cancel-btn').addEventListener('click', () => {
-        vscode.postMessage({ command: 'cancel' });
+        vscode.postMessage({ command: 'cancel', dirty: isDirty() });
       });
 
       document.getElementById('browse-script').addEventListener('click', () => {
@@ -920,9 +952,11 @@ export function getEditorHtml(
             else if (message.field === 'interpreter') interpreterPathEl.value = message.path;
             else if (message.field === 'cwd') cwdEl.value = message.path;
             else if (message.field === 'envFile') envFileEl.value = message.path;
+            updateDirty();
             break;
           case 'applied':
             showApplyStatus('Changes applied');
+            markSaved();
             break;
         }
       });
@@ -934,6 +968,7 @@ export function getEditorHtml(
 
       // Initialize
       populateForm(initialConfig);
+      markSaved();
     })();
   </script>
 </body>

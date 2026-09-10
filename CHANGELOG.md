@@ -13,6 +13,10 @@ All notable changes to this project are documented in this file.
 - Double-clicking a configuration in the CharmRun sidebar opens it in the
   editor. Users who set `workbench.list.openMode` to `doubleClick` keep the
   single double-click; the default single-click mode still only selects.
+- Confirmation before unsaved editor changes are discarded, both when
+  **Cancel** is clicked and when another configuration is opened over the
+  current one. Re-opening the configuration already on screen keeps the form
+  and its unsaved edits instead of re-rendering.
 
 ### Changed
 

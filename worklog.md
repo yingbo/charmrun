@@ -91,8 +91,8 @@ Active config ID stored in `workspaceState` (per-user, not committed to VCS).
 - Dynamic env variable rows (add/remove)
 - Args parsed with quote-aware splitting
 - Buttons: Cancel, Apply (save without closing), Save & Close
-- Message passing protocol: save/apply/cancel/browse* (webview→ext),
-  setFilePath/applied (ext→webview)
+- Message passing protocol: save/apply/cancel/dirtyState/browse*
+  (webview→ext), setFilePath/applied (ext→webview)
 
 ### Status Bar (Left-aligned)
 - Config selector: `$(gear) ConfigName` or `$(add) Create Run Config`
@@ -167,6 +167,16 @@ PyCharm-style pre-run steps attached to each configuration.
 - When `workbench.list.openMode` is `doubleClick`, VS Code already withholds
   the command until the second click, so the handler opens the editor on the
   first invocation rather than requiring two double-clicks.
+- Unsaved-change guard: the webview compares the form against the last saved
+  snapshot and posts `dirtyState` whenever that changes, since the extension
+  cannot read the form itself. `ConfigEditorProvider` uses the flag to confirm
+  with a modal before **Cancel** closes the panel or before `open()` renders a
+  different configuration over the current one. Re-opening the configuration
+  already on screen reveals the panel untouched, so a stray double-click
+  cannot cost any edits.
+- Known limitation: VS Code offers no way to veto a webview panel's disposal
+  (`onDidDispose` only fires after the fact), so closing the editor tab still
+  discards unsaved edits without a prompt.
 
 ## Build
 

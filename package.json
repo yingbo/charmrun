@@ -145,6 +145,11 @@
         "title": "Debug",
         "category": "CharmRun",
         "icon": "$(bug)"
+      },
+      {
+        "command": "charmrun.treeItemActivated",
+        "title": "Open Run Configuration",
+        "category": "CharmRun"
       }
     ],
     "menus": {
@@ -199,6 +204,10 @@
         },
         {
           "command": "charmrun.debugConfigFromTree",
+          "when": "false"
+        },
+        {
+          "command": "charmrun.treeItemActivated",
           "when": "false"
         }
       ]
