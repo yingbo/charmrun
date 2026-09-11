@@ -145,6 +145,17 @@ export function getEditorHtml(
     .secondary-btn:hover {
       background: var(--vscode-button-secondaryHoverBackground);
     }
+    .apply-status {
+      margin-right: auto;
+      align-self: center;
+      font-size: var(--vscode-font-size);
+      color: var(--vscode-descriptionForeground);
+      opacity: 0;
+      transition: opacity 150ms ease-in;
+    }
+    .apply-status.visible {
+      opacity: 1;
+    }
     .hidden {
       display: none;
     }
@@ -385,8 +396,10 @@ export function getEditorHtml(
   </div>
 
   <div class="button-bar">
+    <span class="apply-status" id="apply-status" role="status" aria-live="polite"></span>
     <button class="secondary-btn" id="cancel-btn">Cancel</button>
-    <button class="primary-btn" id="save-btn">Save</button>
+    <button class="secondary-btn" id="apply-btn">Apply</button>
+    <button class="primary-btn" id="save-btn">Save &amp; Close</button>
   </div>
 
   <div class="modal-overlay hidden" id="multiline-overlay">
@@ -838,18 +851,80 @@ export function getEditorHtml(
         renderPreRun();
       });
 
-      document.getElementById('save-btn').addEventListener('click', () => {
+      const applyStatusEl = document.getElementById('apply-status');
+      let applyStatusTimer;
+
+      function showApplyStatus(text) {
+        applyStatusEl.textContent = text;
+        applyStatusEl.classList.add('visible');
+        clearTimeout(applyStatusTimer);
+        applyStatusTimer = setTimeout(() => {
+          applyStatusEl.classList.remove('visible');
+        }, 2000);
+      }
+
+      /**
+       * Returns the form contents, or null when a required field is missing.
+       * Invalid fields are highlighted and focused as a side effect.
+       */
+      function collectValidatedFormData() {
         const config = collectFormData();
         if (!config.name) {
           nameEl.style.borderColor = 'var(--vscode-inputValidation-errorBorder)';
           nameEl.focus();
-          return;
+          return null;
         }
-        vscode.postMessage({ command: 'save', config: config });
+        return config;
+      }
+
+      // Unsaved-change tracking. The extension cannot read the form, so the
+      // webview tells it whether the form still matches the last saved state.
+      // The extension uses that to confirm before anything discards edits.
+      let savedSnapshot = '';
+      let reportedDirty = false;
+
+      function isDirty() {
+        return JSON.stringify(collectFormData()) !== savedSnapshot;
+      }
+
+      /** Treats the current form as the saved state (on load, and after Apply). */
+      function markSaved() {
+        savedSnapshot = JSON.stringify(collectFormData());
+        reportedDirty = false;
+        vscode.postMessage({ command: 'dirtyState', dirty: false });
+      }
+
+      function updateDirty() {
+        const dirty = isDirty();
+        if (dirty !== reportedDirty) {
+          reportedDirty = dirty;
+          vscode.postMessage({ command: 'dirtyState', dirty: dirty });
+        }
+      }
+
+      // 'input' and 'change' bubble from every field, including rows added
+      // after load. Buttons (add/remove/reorder a row or step) mutate state in
+      // their own handlers, so re-check once those have run.
+      document.addEventListener('input', updateDirty);
+      document.addEventListener('change', updateDirty);
+      document.addEventListener('click', () => setTimeout(updateDirty, 0));
+
+      document.getElementById('save-btn').addEventListener('click', () => {
+        const config = collectValidatedFormData();
+        if (config) {
+          vscode.postMessage({ command: 'save', config: config });
+        }
+      });
+
+      document.getElementById('apply-btn').addEventListener('click', () => {
+        const config = collectValidatedFormData();
+        if (config) {
+          vscode.postMessage({ command: 'apply', config: config });
+        }
       });
 
       document.getElementById('cancel-btn').addEventListener('click', () => {
-        vscode.postMessage({ command: 'cancel' });
+        vscode.postMessage({ command: 'cancel', dirty: isDirty() });
       });
 
       document.getElementById('browse-script').addEventListener('click', () => {
@@ -877,6 +952,11 @@ export function getEditorHtml(
             else if (message.field === 'interpreter') interpreterPathEl.value = message.path;
             else if (message.field === 'cwd') cwdEl.value = message.path;
             else if (message.field === 'envFile') envFileEl.value = message.path;
+            updateDirty();
+            break;
+          case 'applied':
+            showApplyStatus('Changes applied');
+            markSaved();
             break;
         }
       });
@@ -888,6 +968,7 @@ export function getEditorHtml(
 
       // Initialize
       populateForm(initialConfig);
+      markSaved();
     })();
   </script>
 </body>

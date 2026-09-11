@@ -40,18 +40,46 @@ with a 401, regenerate the token in Azure DevOps and re-run `gh secret set`.
 2. Under your profile → Settings, sign the Eclipse Publisher Agreement (this
    links your Open VSX account to your eclipse.org account).
 3. Under Settings → Access Tokens, generate a personal access token.
-4. Claim the `yingbo` namespace (must match `publisher` in `package.json`,
+4. Create the `yingbo` namespace (must match `publisher` in `package.json`,
    one-time):
 
    ```bash
    npx ovsx create-namespace yingbo -p <open-vsx-token>
    ```
 
+   This only makes your account a *contributor* of the namespace, which is
+   enough to publish but not enough to be *verified*: a namespace with no
+   owner is unverified, and every version published into it shows a warning
+   banner on open-vsx.org ("That user account is not a verified publisher of
+   the namespace"). See step 6.
+
 5. Store the token as the repository secret `OVSX_PAT`:
 
    ```bash
    gh secret set OVSX_PAT -R yingbo/charmrun
    ```
+
+6. Claim *ownership* of the namespace (one-time). Ownership is granted by the
+   Eclipse Foundation through a public GitHub issue, not from the Open VSX
+   settings page:
+
+   1. Open a new issue with the **Claim namespace ownership** template at
+      <https://github.com/EclipseFdn/open-vsx.org/issues/new/choose>, titled
+      `Claiming namespace yingbo`.
+   2. Tick "not currently owned" and "at least 12 months of public GitHub
+      history".
+   3. Pick **Option 1** (the namespace is also a VS Code Marketplace publisher
+      with an extension whose `package.json` names a repo) and, under it, "the
+      extension repo is owned by the GitHub ID making this request", since
+      `yingbo/charmrun` is owned by the same GitHub account that publishes.
+      Put `https://github.com/yingbo/charmrun` in "Claim evidence".
+   4. Wait for an Eclipse Foundation admin to grant ownership. Once the
+      namespace has an owner, the warning disappears from every version
+      published by a namespace member; nothing needs to be republished.
+
+   After that, members (for example a CI service account) can be managed at
+   <https://open-vsx.org/user-settings/namespaces>. Add bots as *contributors*.
+   Reference: <https://github.com/eclipse-openvsx/openvsx/wiki/Namespace-Access>.
 
 Open VSX tokens don't expire on a fixed schedule, but can be revoked from the
 same Access Tokens page; regenerate and re-run `gh secret set` if a release

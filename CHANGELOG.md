@@ -2,6 +2,27 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.4.0] - 2026-09-10
+
+### Added
+
+- **Apply** button in the run configuration editor. It writes the current form
+  to `launch.json` and leaves the editor open, so a configuration can be tweaked
+  and re-run without reopening it. Applying a new configuration adds it once;
+  later clicks update it in place.
+- Double-clicking a configuration in the CharmRun sidebar opens it in the
+  editor. Users who set `workbench.list.openMode` to `doubleClick` keep the
+  single double-click; the default single-click mode still only selects.
+- Confirmation before unsaved editor changes are discarded, both when
+  **Cancel** is clicked and when another configuration is opened over the
+  current one. Re-opening the configuration already on screen keeps the form
+  and its unsaved edits instead of re-rendering.
+
+### Changed
+
+- The editor's **Save** button is now **Save & Close**, to distinguish it from
+  **Apply**. Its behaviour is unchanged.
+
 ## [1.3.0] - 2026-09-05
 
 ### Added

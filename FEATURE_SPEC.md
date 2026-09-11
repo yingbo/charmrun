@@ -214,27 +214,37 @@ Configurations must be stored in workspace.
 
 File:
 
-.vscode/python-run-configs.json
+.vscode/launch.json
+
+CharmRun keeps no private configuration file. Each configuration is a standard
+`debugpy` entry in the workspace's `launch.json`, tagged with `charmrunManaged`
+so CharmRun can tell its own entries apart from hand-written ones. Entries it
+does not own are left untouched, and every CharmRun configuration is therefore
+also runnable from VS Code's built-in Run and Debug view.
+
+Keys that only CharmRun understands are prefixed `charmrun`; everything else is
+ordinary debugpy.
 
 Example:
 
 {
-“configurations”: [
-{
-“name”: “Run API”,
-“runType”: “script”,
-“script”: “src/api/main.py”,
-“module”: “”,
-“interpreter”: “selected”,
-“args”: [”–port”, “8080”],
-“cwd”: “${workspaceFolder}”,
-“env”: {
-“ENV”: “dev”
-},
-“terminal”: “integrated”,
-“runMode”: “run”
-}
-]
+  "version": "0.2.0",
+  "configurations": [
+    {
+      "name": "Run API",
+      "type": "debugpy",
+      "request": "launch",
+      "program": "src/api/main.py",
+      "args": ["--port", "8080"],
+      "cwd": "${workspaceFolder}",
+      "env": { "ENV": "dev" },
+      "console": "integratedTerminal",
+      "justMyCode": true,
+      "charmrunManaged": true,
+      "charmrunId": "b6f0e0d2-1f4a-4f1e-9a3b-6d5c2f8e7a10",
+      "charmrunRunMode": "run"
+    }
+  ]
 }
 
 ---
@@ -260,6 +270,8 @@ Edit
 Delete
 Duplicate
 
+Double-clicking a configuration must open it in the editor.
+
 ---
 
 # 7. Configuration Editor
@@ -281,8 +293,11 @@ Run mode
 
 Users must be able to:
 
-Save
+Apply (save without closing the editor)
+Save & Close
 Cancel
+
+Discarding unsaved changes must be confirmed first.
 
 ---
 
@@ -449,8 +464,8 @@ Each workspace folder may have its own configuration file.
 
 Example:
 
-projectA/.vscode/python-run-configs.json
-projectB/.vscode/python-run-configs.json
+projectA/.vscode/launch.json
+projectB/.vscode/launch.json
 
 ---
 

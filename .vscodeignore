@@ -8,11 +8,13 @@ node_modules/**
 .gitignore
 tsconfig.json
 esbuild.js
+scripts/**
 dev.sh
 package-lock.json
 *.vsix
 *.map
 AGENTS.md
+CLAUDE.md
 CONTRIBUTING.md
 FEATURE_SPEC.md
 firebase-debug.log

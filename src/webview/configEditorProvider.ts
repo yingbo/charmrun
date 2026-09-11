@@ -12,7 +12,10 @@ import { EditorContext, getEditorHtml, getNonce } from './configEditorHtml';
 export class ConfigEditorProvider implements vscode.Disposable {
   private panel: vscode.WebviewPanel | undefined;
   private currentFolder: vscode.WorkspaceFolder | undefined;
+  private currentConfigId: string | undefined;
   private isNew = false;
+  /** Whether the open form has edits that have not been written yet. */
+  private isDirty = false;
 
   constructor(
     private context: vscode.ExtensionContext,
@@ -23,9 +26,30 @@ export class ConfigEditorProvider implements vscode.Disposable {
     folder: vscode.WorkspaceFolder,
     config?: RunConfiguration
   ): Promise<void> {
+    // Re-opening the configuration already on screen keeps the form as it
+    // is, unsaved edits included, rather than re-rendering over them.
+    if (
+      this.panel &&
+      config &&
+      config.id === this.currentConfigId &&
+      this.currentFolder?.uri.toString() === folder.uri.toString()
+    ) {
+      this.panel.reveal(vscode.ViewColumn.Active);
+      return;
+    }
+
+    // Showing a different configuration replaces the form, so anything
+    // unsaved would be lost without asking.
+    if (this.panel && this.isDirty && !(await this.confirmDiscard())) {
+      this.panel.reveal(vscode.ViewColumn.Active);
+      return;
+    }
+
     this.currentFolder = folder;
     this.isNew = !config;
+    this.isDirty = false;
     const editConfig = config ?? this.createDefaultConfigForFolder(folder);
+    this.currentConfigId = editConfig.id;
 
     if (this.panel) {
       this.panel.reveal(vscode.ViewColumn.Active);
@@ -45,6 +69,8 @@ export class ConfigEditorProvider implements vscode.Disposable {
 
       this.panel.onDidDispose(() => {
         this.panel = undefined;
+        this.currentConfigId = undefined;
+        this.isDirty = false;
       });
 
       this.panel.webview.onDidReceiveMessage((message) =>
@@ -105,28 +131,77 @@ export class ConfigEditorProvider implements vscode.Disposable {
     return { availableConfigs, availableTasks };
   }
 
+  /**
+   * Writes the edited configuration to the store, without closing the panel.
+   * The first successful write of a new configuration adds it; every later
+   * write updates it in place, so repeated Apply clicks do not create
+   * duplicates.
+   *
+   * @returns true when the configuration was written.
+   */
+  /**
+   * Asks whether unsaved edits may be thrown away.
+   *
+   * @returns true when the user chose to discard them.
+   */
+  private async confirmDiscard(): Promise<boolean> {
+    const discard = 'Discard Changes';
+    const choice = await vscode.window.showWarningMessage(
+      'This run configuration has unsaved changes.',
+      { modal: true, detail: 'Use Apply or Save & Close to keep them.' },
+      discard
+    );
+    return choice === discard;
+  }
+
+  private persist(config: RunConfiguration): boolean {
+    if (!this.currentFolder) {
+      return false;
+    }
+    config.preRun = normalizePreRunSteps(config.preRun).filter(
+      (step) => step.configId !== config.id
+    );
+    if (this.isNew) {
+      this.configStore.addConfiguration(this.currentFolder, config);
+      this.isNew = false;
+    } else {
+      this.configStore.updateConfiguration(this.currentFolder, config);
+    }
+    if (this.panel) {
+      this.panel.title = `Edit: ${config.name}`;
+    }
+    this.currentConfigId = config.id;
+    this.isDirty = false;
+    return true;
+  }
+
   private async handleMessage(message: { command: string; [key: string]: unknown }): Promise<void> {
     switch (message.command) {
       case 'save': {
-        const config = message.config as RunConfiguration;
-        if (!this.currentFolder) {
-          return;
+        if (this.persist(message.config as RunConfiguration)) {
+          this.panel?.dispose();
         }
-        config.preRun = normalizePreRunSteps(config.preRun).filter(
-          (step) => step.configId !== config.id
-        );
-        if (this.isNew) {
-          this.configStore.addConfiguration(this.currentFolder, config);
-        } else {
-          this.configStore.updateConfiguration(this.currentFolder, config);
+        break;
+      }
+
+      case 'apply': {
+        if (this.persist(message.config as RunConfiguration)) {
+          this.panel?.webview.postMessage({ command: 'applied' });
+        }
+        break;
+      }
+
+      case 'dirtyState':
+        this.isDirty = message.dirty === true;
+        break;
+
+      case 'cancel': {
+        if (message.dirty === true && !(await this.confirmDiscard())) {
+          break;
         }
         this.panel?.dispose();
         break;
       }
-
-      case 'cancel':
-        this.panel?.dispose();
-        break;
 
       case 'browseScript': {
         const result = await vscode.window.showOpenDialog({

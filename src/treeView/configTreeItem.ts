@@ -13,6 +13,14 @@ export class ConfigTreeItem extends vscode.TreeItem {
     this.tooltip = this.buildTooltip();
     this.description = this.buildDescription();
 
+    // Fires on every click; charmrun.treeItemActivated decides whether the
+    // click completes a double-click and opens the editor.
+    this.command = {
+      command: 'charmrun.treeItemActivated',
+      title: 'Edit Configuration',
+      arguments: [this],
+    };
+
     if (isActive) {
       this.iconPath = new vscode.ThemeIcon('play-circle', new vscode.ThemeColor('charts.green'));
     } else {
