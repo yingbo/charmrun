@@ -7,9 +7,34 @@
 - Do not merge PRs yourself; the user will review and merge
 - Do not close issues yourself; the user will close them
 
-### Commits
-- NEVER add `Co-Authored-By` lines in commit messages
-- The repository owner must be the sole contributor
+### Authorship
+
+The repository owner is the sole author of this project. Nothing an agent
+produces may carry agent, AI, or tooling attribution. This is not limited to
+one trailer; it covers every artifact that leaves the working tree.
+
+- NEVER add `Co-Authored-By` lines
+- NEVER add `Claude-Session`, `Generated with`, or any other attribution
+  trailer, footer, badge, or 🤖 marker
+- Commit **author and committer** must both be the repository owner:
+  `Yingbo Miao <yingbo@users.noreply.github.com>`. Check `git config user.name`
+  and `user.email` before the first commit of a session and set them if the
+  environment supplied anything else.
+- The same applies to pull request titles and bodies, issue and review
+  comments, tag messages, release notes, code comments, and documentation
+- Do not credit the model, the assistant, or the session anywhere, or name
+  them as a contributor. Referring to an agent instruction file by its
+  filename (`AGENTS.md`, `CLAUDE.md`) is fine; that is repository
+  configuration, not authorship.
+
+Before pushing, verify:
+
+```bash
+git log origin/main..HEAD --format='%an <%ae> | %cn <%ce>' | sort -u
+git log origin/main..HEAD --format='%B' | grep -i 'claude\|anthropic\|co-authored'
+```
+
+The first must list only the owner. The second must return nothing.
 
 ### Worktrees
 - Do NOT create git worktrees unless absolutely necessary

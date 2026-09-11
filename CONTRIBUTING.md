@@ -69,5 +69,8 @@ From repository rules (`AGENTS.md`):
 - Use feature branches for issue-driven work
 - Do not merge PRs as an agent
 - Do not close issues as an agent
-- Do not add `Co-Authored-By` lines in commit messages
 - Avoid creating git worktrees unless absolutely necessary
+- The repository owner is the sole author. Commits, pull requests, comments and
+  documentation carry no agent, AI or tooling attribution of any kind, and the
+  commit author and committer are always the owner. See the Authorship section
+  of `AGENTS.md`.
