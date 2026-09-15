@@ -13,6 +13,7 @@ CharmRun lets you create named run/debug profiles (script or module), choose int
 - Uses `.vscode/launch.json` as the source of truth
 - Adopt existing Python `debugpy` launch configurations in place
 - Before-launch steps: run another configuration, an external tool, or a VS Code task first
+- Save console output to a file, overwritten on every run (PyCharm-style)
 - Active configuration picker in status bar
 - Sidebar tree with inline Run/Debug actions
 - Run/debug current Python file without creating a config
@@ -167,6 +168,7 @@ Applied to:
 - `cwd`
 - `env` values
 - `envFile`
+- `outputFile`
 - before-launch external tool `command`, `args`, and `cwd`
 
 ## Interpreter Resolution

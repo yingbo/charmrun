@@ -15,6 +15,8 @@ const CHARMRUN_MANAGED_KEY = 'charmrunManaged';
 const CHARMRUN_ID_KEY = 'charmrunId';
 const CHARMRUN_RUN_MODE_KEY = 'charmrunRunMode';
 const CHARMRUN_PRE_RUN_KEY = 'charmrunPreRun';
+const CHARMRUN_SAVE_OUTPUT_KEY = 'charmrunSaveOutput';
+const CHARMRUN_OUTPUT_FILE_KEY = 'charmrunOutputFile';
 
 type LaunchJsonFile = {
   version: string;
@@ -38,6 +40,8 @@ type LaunchConfiguration = Record<string, unknown> & {
   charmrunId?: string;
   charmrunRunMode?: string;
   charmrunPreRun?: unknown;
+  charmrunSaveOutput?: boolean;
+  charmrunOutputFile?: string;
 };
 
 export type AdoptableConfiguration = {
@@ -63,6 +67,8 @@ const KNOWN_DEBUG_KEYS = new Set([
   CHARMRUN_ID_KEY,
   CHARMRUN_RUN_MODE_KEY,
   CHARMRUN_PRE_RUN_KEY,
+  CHARMRUN_SAVE_OUTPUT_KEY,
+  CHARMRUN_OUTPUT_FILE_KEY,
 ]);
 
 export class ConfigStore implements vscode.Disposable {
@@ -383,6 +389,10 @@ export class ConfigStore implements vscode.Disposable {
       terminal: this.fromLaunchConsole(entry.console),
       runMode: this.fromLaunchRunMode(entry),
       preRun: normalizePreRunSteps(entry[CHARMRUN_PRE_RUN_KEY]),
+      saveOutputToFile: entry[CHARMRUN_SAVE_OUTPUT_KEY] === true,
+      outputFile: typeof entry[CHARMRUN_OUTPUT_FILE_KEY] === 'string'
+        ? entry[CHARMRUN_OUTPUT_FILE_KEY]
+        : '',
       extra: this.extractExtraFields(entry),
     };
   }
@@ -421,6 +431,14 @@ export class ConfigStore implements vscode.Disposable {
       launchConfig[CHARMRUN_PRE_RUN_KEY] = clonePreRunSteps(config.preRun);
     } else {
       delete launchConfig[CHARMRUN_PRE_RUN_KEY];
+    }
+
+    if (config.saveOutputToFile && config.outputFile.trim()) {
+      launchConfig[CHARMRUN_SAVE_OUTPUT_KEY] = true;
+      launchConfig[CHARMRUN_OUTPUT_FILE_KEY] = config.outputFile;
+    } else {
+      delete launchConfig[CHARMRUN_SAVE_OUTPUT_KEY];
+      delete launchConfig[CHARMRUN_OUTPUT_FILE_KEY];
     }
 
     return launchConfig;
