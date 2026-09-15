@@ -2,6 +2,24 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.5.0] - 2026-09-15
+
+### Added
+
+- **Run** and **Debug** buttons in the run configuration editor. They save the
+  current form and launch it directly, without needing to close the editor
+  first and use the tree view or status bar.
+- PyCharm-style "Save console output to file" option on run configurations.
+  When set, the target file is truncated before each run and populated by
+  tracking debugpy's DAP output events, which works regardless of which
+  terminal/console the configuration uses.
+
+### Fixed
+
+- The multi-line argument editor now splits arguments into one per line only
+  on unquoted whitespace, so a quoted argument containing spaces (e.g.
+  `--message "hello world"`) stays on a single line.
+
 ## [1.4.0] - 2026-09-10
 
 ### Added
