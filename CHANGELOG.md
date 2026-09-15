@@ -2,6 +2,14 @@
 
 All notable changes to this project are documented in this file.
 
+## [1.5.1] - 2026-09-15
+
+### Fixed
+
+- The run configuration editor's webview script had a broken escape sequence
+  that made it fail to parse, so opening any configuration (new or existing)
+  silently showed empty/default fields instead of the actual saved values.
+
 ## [1.5.0] - 2026-09-15
 
 ### Added
