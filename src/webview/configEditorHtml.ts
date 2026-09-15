@@ -698,10 +698,41 @@ export function getEditorHtml(
 
       function openMultilineEditor(inputEl) {
         multilineTarget = inputEl;
-        multilineTextarea.value = inputEl.value;
+        multilineTextarea.value = expandArgsForEditing(inputEl.value);
         multilineOverlay.classList.remove('hidden');
         multilineTextarea.focus();
         multilineTextarea.setSelectionRange(multilineTextarea.value.length, multilineTextarea.value.length);
+      }
+
+      // Inverse of collapseLines: puts each argument on its own line so long
+      // argument lists are easier to scan/edit. Spaces inside a quoted
+      // argument (e.g. --message "hello world") are kept on one line since
+      // parseArgs() treats them as a single argument, not a separator.
+      function expandArgsForEditing(text) {
+        const lines = [];
+        let current = '';
+        let inQuote = '';
+        for (let i = 0; i < text.length; i++) {
+          const ch = text[i];
+          if (inQuote) {
+            current += ch;
+            if (ch === inQuote) {
+              inQuote = '';
+            }
+          } else if (ch === '"' || ch === "'") {
+            inQuote = ch;
+            current += ch;
+          } else if (ch === ' ' || ch === '\t') {
+            if (current) {
+              lines.push(current);
+              current = '';
+            }
+          } else {
+            current += ch;
+          }
+        }
+        if (current) lines.push(current);
+        return lines.join('\n');
       }
 
       function closeMultilineEditor() {
