@@ -3,10 +3,12 @@ import * as path from 'path';
 import * as fs from 'fs';
 import {
   RunConfiguration,
+  RunMode,
   createDefaultConfig,
   normalizePreRunSteps,
 } from '../types';
 import { ConfigStore } from '../configStore';
+import { Runner } from '../runner';
 import { EditorContext, getEditorHtml, getNonce } from './configEditorHtml';
 
 export class ConfigEditorProvider implements vscode.Disposable {
@@ -19,7 +21,8 @@ export class ConfigEditorProvider implements vscode.Disposable {
 
   constructor(
     private context: vscode.ExtensionContext,
-    private configStore: ConfigStore
+    private configStore: ConfigStore,
+    private runner: Runner
   ) {}
 
   async open(
@@ -194,6 +197,20 @@ export class ConfigEditorProvider implements vscode.Disposable {
       case 'dirtyState':
         this.isDirty = message.dirty === true;
         break;
+
+      case 'run':
+      case 'debug': {
+        const folder = this.currentFolder;
+        if (folder && this.persist(message.config as RunConfiguration)) {
+          this.panel?.webview.postMessage({ command: 'applied' });
+          await this.runner.execute(
+            message.config as RunConfiguration,
+            folder,
+            message.command as RunMode
+          );
+        }
+        break;
+      }
 
       case 'cancel': {
         if (message.dirty === true && !(await this.confirmDiscard())) {

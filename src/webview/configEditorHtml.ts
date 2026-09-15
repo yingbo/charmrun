@@ -397,6 +397,8 @@ export function getEditorHtml(
 
   <div class="button-bar">
     <span class="apply-status" id="apply-status" role="status" aria-live="polite"></span>
+    <button class="secondary-btn" id="debug-btn">Debug</button>
+    <button class="secondary-btn" id="run-btn">Run</button>
     <button class="secondary-btn" id="cancel-btn">Cancel</button>
     <button class="secondary-btn" id="apply-btn">Apply</button>
     <button class="primary-btn" id="save-btn">Save &amp; Close</button>
@@ -951,6 +953,20 @@ export function getEditorHtml(
         const config = collectValidatedFormData();
         if (config) {
           vscode.postMessage({ command: 'apply', config: config });
+        }
+      });
+
+      document.getElementById('run-btn').addEventListener('click', () => {
+        const config = collectValidatedFormData();
+        if (config) {
+          vscode.postMessage({ command: 'run', config: config });
+        }
+      });
+
+      document.getElementById('debug-btn').addEventListener('click', () => {
+        const config = collectValidatedFormData();
+        if (config) {
+          vscode.postMessage({ command: 'debug', config: config });
         }
       });
 

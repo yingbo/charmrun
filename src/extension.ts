@@ -3,6 +3,7 @@ import { ConfigStore } from './configStore';
 import { ConfigTreeProvider } from './treeView/configTreeProvider';
 import { ConfigEditorProvider } from './webview/configEditorProvider';
 import { StatusBarManager } from './statusBar';
+import { Runner } from './runner';
 import { registerCommands } from './commands';
 
 let outputChannel: vscode.OutputChannel | undefined;
@@ -16,10 +17,11 @@ export function activate(context: vscode.ExtensionContext): void {
 
     const configStore = new ConfigStore(context);
     const treeProvider = new ConfigTreeProvider(configStore);
-    const editorProvider = new ConfigEditorProvider(context, configStore);
+    const runner = new Runner(configStore);
+    const editorProvider = new ConfigEditorProvider(context, configStore, runner);
     const statusBar = new StatusBarManager(configStore);
 
-    registerCommands(context, configStore, treeProvider, editorProvider, statusBar);
+    registerCommands(context, configStore, treeProvider, editorProvider, statusBar, runner);
     outputChannel.appendLine('Commands registered');
 
     const treeView = vscode.window.createTreeView('charmrun.configurationsView', {
@@ -31,7 +33,7 @@ export function activate(context: vscode.ExtensionContext): void {
     statusBar.show();
     outputChannel.appendLine('Status bar shown');
 
-    context.subscriptions.push(treeView, configStore, statusBar, editorProvider);
+    context.subscriptions.push(treeView, configStore, statusBar, editorProvider, runner);
     outputChannel.appendLine('CharmRun activation complete');
   } catch (error) {
     const message = error instanceof Error ? error.stack ?? error.message : String(error);
