@@ -11,11 +11,9 @@ export function registerCommands(
   configStore: ConfigStore,
   treeProvider: ConfigTreeProvider,
   editorProvider: ConfigEditorProvider,
-  statusBar: StatusBarManager
+  statusBar: StatusBarManager,
+  runner: Runner
 ): void {
-  const runner = new Runner(configStore);
-  context.subscriptions.push(runner);
-
   // Run the active configuration
   context.subscriptions.push(
     vscode.commands.registerCommand('charmrun.runConfiguration', async () => {
