@@ -773,7 +773,7 @@ export function getEditorHtml(
           }
         }
         if (current) lines.push(current);
-        return lines.join('\n');
+        return lines.join('\\n');
       }
 
       function closeMultilineEditor() {
