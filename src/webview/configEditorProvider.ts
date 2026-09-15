@@ -281,6 +281,25 @@ export class ConfigEditorProvider implements vscode.Disposable {
         break;
       }
 
+      case 'browseOutputFile': {
+        const result = await vscode.window.showSaveDialog({
+          defaultUri: this.currentFolder?.uri,
+          saveLabel: 'Select Output File',
+        });
+        if (result && this.currentFolder) {
+          const relativePath = path.relative(
+            this.currentFolder.uri.fsPath,
+            result.fsPath
+          );
+          this.panel?.webview.postMessage({
+            command: 'setFilePath',
+            field: 'outputFile',
+            path: relativePath,
+          });
+        }
+        break;
+      }
+
       case 'browseCwd': {
         const result = await vscode.window.showOpenDialog({
           canSelectFiles: false,

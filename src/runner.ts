@@ -1,5 +1,6 @@
 import * as vscode from 'vscode';
 import * as path from 'path';
+import * as fs from 'fs';
 import { RunConfiguration, RunMode, generateId } from './types';
 import { VariableResolver } from './variableResolver';
 import { InterpreterResolver } from './interpreterResolver';
@@ -13,6 +14,7 @@ const TERMINAL_MAP: Record<string, string> = {
 };
 
 const LAUNCH_TOKEN_KEY = 'charmrunLaunchToken';
+const OUTPUT_FILE_KEY = 'charmrunOutputFile';
 
 export interface ExecuteOptions {
   /** Configuration ids already on the launch stack, used for cycle detection. */
@@ -25,6 +27,7 @@ export class Runner implements vscode.Disposable {
   private interpreterResolver = new InterpreterResolver();
   private output = vscode.window.createOutputChannel('CharmRun Before Launch');
   private preRunRunner: PreRunRunner;
+  private outputFileTracker: vscode.Disposable;
 
   constructor(private configStore: ConfigStore) {
     this.preRunRunner = new PreRunRunner(
@@ -32,6 +35,40 @@ export class Runner implements vscode.Disposable {
       (configId, folder, chain) => this.executeConfigStep(configId, folder, chain),
       (configId) => this.configStore.findConfigById(configId)?.config.name
     );
+
+    this.outputFileTracker = vscode.debug.registerDebugAdapterTrackerFactory(
+      'debugpy',
+      {
+        createDebugAdapterTracker: (session) =>
+          this.createOutputFileTracker(session),
+      }
+    );
+  }
+
+  /**
+   * debugpy only emits DAP 'output' events for a session when
+   * `redirectOutput` is set (buildDebugConfig sets it whenever a config asks
+   * to save its console output), so this is a no-op for every other session.
+   */
+  private createOutputFileTracker(
+    session: vscode.DebugSession
+  ): vscode.DebugAdapterTracker | undefined {
+    const outputFile = session.configuration[OUTPUT_FILE_KEY];
+    if (typeof outputFile !== 'string' || !outputFile) {
+      return undefined;
+    }
+
+    return {
+      onDidSendMessage: (message) => {
+        if (
+          message?.type === 'event' &&
+          message.event === 'output' &&
+          typeof message.body?.output === 'string'
+        ) {
+          fs.appendFileSync(outputFile, message.body.output);
+        }
+      },
+    };
   }
 
   async execute(
@@ -238,6 +275,29 @@ export class Runner implements vscode.Disposable {
         : path.join(folder.uri.fsPath, envFilePath);
     }
 
+    if (config.saveOutputToFile && config.outputFile.trim()) {
+      const outputPath = resolver.resolve(config.outputFile.trim());
+      const absoluteOutputPath = path.isAbsolute(outputPath)
+        ? outputPath
+        : path.join(folder.uri.fsPath, outputPath);
+
+      try {
+        fs.mkdirSync(path.dirname(absoluteOutputPath), { recursive: true });
+        // Overwrite so each run starts with a clean log, PyCharm-style.
+        fs.writeFileSync(absoluteOutputPath, '');
+      } catch (error) {
+        vscode.window.showErrorMessage(
+          `CharmRun: Could not write output file "${absoluteOutputPath}": ${
+            error instanceof Error ? error.message : String(error)
+          }`
+        );
+        return undefined;
+      }
+
+      debugConfig.redirectOutput = true;
+      debugConfig[OUTPUT_FILE_KEY] = absoluteOutputPath;
+    }
+
     return debugConfig;
   }
 
@@ -261,5 +321,6 @@ export class Runner implements vscode.Disposable {
 
   dispose(): void {
     this.output.dispose();
+    this.outputFileTracker.dispose();
   }
 }

@@ -4,6 +4,12 @@
 
 ### Branching
 - Create feature branches for issue-driven work (example: `feature/issue-123-description`)
+- Branch names must never contain `claude`, `agent`, `ai`, or any other
+  tooling identifier. A pull request page shows its source branch name to
+  every reviewer, so a branch like `claude/...` discloses agent involvement
+  just as surely as a commit trailer would. Rename a branch the harness
+  created with such a prefix (`git branch -m <new-name>`) before opening a PR
+  from it.
 - Do not merge PRs yourself; the user will review and merge
 - Do not close issues yourself; the user will close them
 

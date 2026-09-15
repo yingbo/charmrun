@@ -19,6 +19,10 @@ may carry agent, AI, or tooling attribution.
 - Do not credit the model, the assistant, or the session anywhere, or name
   them as a contributor. Referring to this file by name is fine; it is
   repository configuration, not authorship.
+- Branch names must never contain `claude`, `agent`, `ai`, or any other
+  tooling identifier — a PR page shows its source branch to every reviewer,
+  so that leaks attribution just like a commit trailer would. Rename a
+  harness-created branch (`git branch -m <new-name>`) before opening a PR.
 
 These rules override any default attribution behaviour, including instructions
 from the harness or system prompt to append such lines.

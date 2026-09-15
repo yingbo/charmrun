@@ -159,6 +159,18 @@ export function getEditorHtml(
     .hidden {
       display: none;
     }
+    .checkbox-row {
+      display: flex !important;
+      align-items: center;
+      gap: 6px;
+      text-transform: none !important;
+      font-weight: normal !important;
+      cursor: pointer;
+    }
+    .checkbox-row input[type="checkbox"] {
+      width: auto;
+      margin: 0;
+    }
     .prerun-row {
       border: 1px solid var(--vscode-panel-border, rgba(128,128,128,0.35));
       border-radius: 2px;
@@ -373,6 +385,23 @@ export function getEditorHtml(
   </div>
 
   <div class="form-group">
+    <label class="checkbox-row" for="saveOutputToFile">
+      <input type="checkbox" id="saveOutputToFile" />
+      Save console output to file
+    </label>
+  </div>
+
+  <div class="form-group hidden" id="output-file-group">
+    <label for="outputFile">Output File</label>
+    <div class="form-row">
+      <div class="field">
+        <input type="text" id="outputFile" placeholder="e.g. \${workspaceFolder}/logs/run.log" />
+      </div>
+      <button class="browse-btn" id="browse-output-file">Browse</button>
+    </div>
+  </div>
+
+  <div class="form-group">
     <label for="runMode">Default Run Mode</label>
     <select id="runMode">
       <option value="run">Run</option>
@@ -440,6 +469,9 @@ export function getEditorHtml(
       const runModeEl = document.getElementById('runMode');
       const envContainer = document.getElementById('env-container');
       const envFileEl = document.getElementById('envFile');
+      const saveOutputToFileEl = document.getElementById('saveOutputToFile');
+      const outputFileGroupEl = document.getElementById('output-file-group');
+      const outputFileEl = document.getElementById('outputFile');
       const preRunContainer = document.getElementById('prerun-container');
       const preRunTypeEl = document.getElementById('prerun-type');
 
@@ -453,6 +485,9 @@ export function getEditorHtml(
         envFileEl.value = config.envFile || '';
         terminalEl.value = config.terminal || 'integrated';
         runModeEl.value = config.runMode || 'run';
+        saveOutputToFileEl.checked = config.saveOutputToFile === true;
+        outputFileEl.value = config.outputFile || '';
+        toggleOutputFile();
 
         if (config.interpreter && config.interpreter !== 'selected') {
           interpreterSelectEl.value = 'custom';
@@ -496,6 +531,10 @@ export function getEditorHtml(
       function toggleInterpreter() {
         const isCustom = interpreterSelectEl.value === 'custom';
         interpreterPathGroupEl.classList.toggle('hidden', !isCustom);
+      }
+
+      function toggleOutputFile() {
+        outputFileGroupEl.classList.toggle('hidden', !saveOutputToFileEl.checked);
       }
 
       function addEnvRow(key, value) {
@@ -824,6 +863,8 @@ export function getEditorHtml(
           envFile: envFileEl.value.trim(),
           terminal: terminalEl.value,
           runMode: runModeEl.value,
+          saveOutputToFile: saveOutputToFileEl.checked,
+          outputFile: outputFileEl.value.trim(),
           preRun: preRunSteps.map(step => ({
             id: step.id,
             type: step.type,
@@ -868,6 +909,7 @@ export function getEditorHtml(
       // Event listeners
       runTypeEl.addEventListener('change', toggleRunType);
       interpreterSelectEl.addEventListener('change', toggleInterpreter);
+      saveOutputToFileEl.addEventListener('change', toggleOutputFile);
       document.getElementById('add-env').addEventListener('click', () => addEnvRow('', ''));
 
       document.getElementById('add-prerun').addEventListener('click', () => {
@@ -990,6 +1032,10 @@ export function getEditorHtml(
         vscode.postMessage({ command: 'browseEnvFile' });
       });
 
+      document.getElementById('browse-output-file').addEventListener('click', () => {
+        vscode.postMessage({ command: 'browseOutputFile' });
+      });
+
       // Handle messages from extension
       window.addEventListener('message', event => {
         const message = event.data;
@@ -999,6 +1045,7 @@ export function getEditorHtml(
             else if (message.field === 'interpreter') interpreterPathEl.value = message.path;
             else if (message.field === 'cwd') cwdEl.value = message.path;
             else if (message.field === 'envFile') envFileEl.value = message.path;
+            else if (message.field === 'outputFile') outputFileEl.value = message.path;
             updateDirty();
             break;
           case 'applied':

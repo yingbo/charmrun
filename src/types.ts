@@ -37,6 +37,9 @@ export interface RunConfiguration {
   terminal: TerminalType;
   runMode: RunMode;
   preRun: PreRunStep[];
+  /** Save console output to `outputFile`, overwriting it on every run. */
+  saveOutputToFile: boolean;
+  outputFile: string;
   extra?: Record<string, unknown>;
 }
 
@@ -55,6 +58,8 @@ export function createDefaultConfig(name: string): RunConfiguration {
     terminal: 'integrated',
     runMode: 'run',
     preRun: [],
+    saveOutputToFile: false,
+    outputFile: '',
     extra: {
       justMyCode: true,
     },
